@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
-/* Ensure Tailwind utilities are available */
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap');
+/* Geist font is loaded automatically by Next.js when using Geist from next/font/google */
 
 :root {
   --poker-green: #0d5e3a;
@@ -14,7 +13,7 @@
 }
 
 body {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 /* Poker Table Styles */
