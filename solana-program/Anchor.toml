@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-poker_escrow = "PokerEsc1111111111111111111111111111111111111"
+poker_escrow = "HLwbRZWAGjK7w5T61xegvj37v1H3nATNdTcypAfbFRaq"
 
 [programs.localnet]
-poker_escrow = "PokerEsc1111111111111111111111111111111111111"
+poker_escrow = "HLwbRZWAGjK7w5T61xegvj37v1H3nATNdTcypAfbFRaq"
 
 [registry]
 url = "https://api.apr.dev"

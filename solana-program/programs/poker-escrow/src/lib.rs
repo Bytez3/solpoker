@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("PokerEsc1111111111111111111111111111111111111");
+declare_id!("HLwbRZWAGjK7w5T61xegvj37v1H3nATNdTcypAfbFRaq");
 
 #[program]
 pub mod poker_escrow {
@@ -89,7 +89,8 @@ pub mod poker_escrow {
         tournament.players_joined += 1;
         
         // Store player address
-        tournament.player_addresses[tournament.players_joined as usize - 1] = ctx.accounts.player.key();
+        let player_index = (tournament.players_joined - 1) as usize;
+        tournament.player_addresses[player_index] = ctx.accounts.player.key();
         
         msg!(
             "Player {} joined. Players: {}/{}",

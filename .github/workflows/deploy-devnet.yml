@@ -1,0 +1,106 @@
+name: Deploy to Devnet
+
+on:
+  workflow_dispatch:
+    inputs:
+      wallet_secret:
+        description: 'Base58 encoded wallet private key (from solana-keygen)'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      
+      - name: Install Anchor CLI
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install 0.30.1
+          avm use 0.30.1
+      
+      - name: Configure Solana
+        run: |
+          solana config set --url devnet
+          echo "${{ github.event.inputs.wallet_secret }}" > /tmp/keypair.json
+          solana config set --keypair /tmp/keypair.json
+      
+      - name: Airdrop SOL
+        run: |
+          solana airdrop 2 || solana airdrop 1 || true
+          solana balance
+      
+      - name: Build Program
+        run: |
+          cd solana-program
+          anchor build
+      
+      - name: Deploy Program
+        id: deploy
+        run: |
+          cd solana-program
+          DEPLOY_OUTPUT=$(anchor deploy --provider.cluster devnet 2>&1)
+          echo "$DEPLOY_OUTPUT"
+          PROGRAM_ID=$(echo "$DEPLOY_OUTPUT" | grep "Program Id:" | awk '{print $3}')
+          echo "program_id=$PROGRAM_ID" >> $GITHUB_OUTPUT
+          echo "Deployed Program ID: $PROGRAM_ID"
+      
+      - name: Update Configuration Files
+        run: |
+          PROGRAM_ID="${{ steps.deploy.outputs.program_id }}"
+          
+          # Update Anchor.toml
+          sed -i "s/poker_escrow = \".*\"/poker_escrow = \"$PROGRAM_ID\"/" solana-program/Anchor.toml
+          
+          # Update config.ts
+          sed -i "s/export const POKER_PROGRAM_ID = new PublicKey('.*');/export const POKER_PROGRAM_ID = new PublicKey('$PROGRAM_ID');/" lib/solana/config.ts
+          
+          # Create deployment info file
+          cat > deployment-info.txt << EOF
+          Deployment successful!
+          
+          Program ID: $PROGRAM_ID
+          Network: devnet
+          Timestamp: $(date)
+          
+          Next steps:
+          1. Update your .env.local file with:
+             NEXT_PUBLIC_POKER_PROGRAM_ID=$PROGRAM_ID
+          
+          2. Pull these changes or manually update config files
+          
+          3. Run: npx prisma migrate dev
+          
+          4. Run: npm run dev
+          EOF
+          
+          cat deployment-info.txt
+      
+      - name: Commit updated files
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add solana-program/Anchor.toml lib/solana/config.ts deployment-info.txt
+          git commit -m "Update program ID after devnet deployment" || echo "No changes to commit"
+          git push || echo "Nothing to push"
+      
+      - name: Create deployment artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-info
+          path: deployment-info.txt
+
