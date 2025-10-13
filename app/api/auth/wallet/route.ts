@@ -7,7 +7,8 @@ import { authenticateWallet, generateAuthMessage } from '@/lib/auth/wallet-auth'
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const walletAddress = searchParams.get('address');
+  // Support both 'address' and 'walletAddress' params for compatibility
+  const walletAddress = searchParams.get('walletAddress') || searchParams.get('address');
   
   if (!walletAddress) {
     return NextResponse.json(

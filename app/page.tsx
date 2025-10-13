@@ -10,16 +10,21 @@ export default function Home() {
   const { connected, publicKey, signMessage } = useWallet();
   const router = useRouter();
   const [authenticating, setAuthenticating] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Check if already authenticated and redirect
-    if (connected && publicKey) {
+    if (mounted && connected && publicKey) {
       const existingToken = localStorage.getItem('poker_token');
       if (existingToken) {
         router.push('/lobby');
       }
     }
-  }, [connected, publicKey, router]);
+  }, [mounted, connected, publicKey, router]);
 
   const authenticateWallet = async () => {
     if (!publicKey || !signMessage) {
@@ -107,7 +112,11 @@ export default function Home() {
               {/* Call to Action */}
               <div className="space-y-6 py-8">
                 <div className="flex flex-col items-center gap-4">
-                  {!connected ? (
+                  {!mounted ? (
+                    <div className="h-16 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                    </div>
+                  ) : !connected ? (
                     <>
                       <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 !transition-all !duration-300 !shadow-lg !shadow-purple-500/50 hover:!shadow-xl hover:!shadow-purple-500/70 !text-lg !px-8 !py-4 !rounded-xl !font-bold" />
                       <p className="text-sm text-gray-500">
