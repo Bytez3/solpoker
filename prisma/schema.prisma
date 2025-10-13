@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(cuid())
+  walletAddress   String            @unique @map("wallet_address")
+  username        String?
+  isAdmin         Boolean           @default(false) @map("is_admin")
+  totalWinnings   Decimal           @default(0) @map("total_winnings") @db.Decimal(20, 9)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  
+  tournamentPlayers TournamentPlayer[]
+  gamePlayers       GamePlayer[]
+  handsWon          Hand[]            @relation("HandWinner")
+  tournamentsCreated Tournament[]     @relation("TournamentCreator")
+
+  @@map("users")
+}
+
+model Tournament {
+  id              String            @id @default(cuid())
+  name            String
+  buyIn           Decimal           @map("buy_in") @db.Decimal(20, 9)
+  rakePercentage  Decimal           @map("rake_percentage") @db.Decimal(5, 2)
+  status          TournamentStatus  @default(WAITING)
+  maxPlayers      Int               @default(6) @map("max_players")
+  escrowAddress   String?           @map("escrow_address")
+  createdById     String            @map("created_by_id")
+  createdBy       User              @relation("TournamentCreator", fields: [createdById], references: [id])
+  startedAt       DateTime?         @map("started_at")
+  completedAt     DateTime?         @map("completed_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  
+  players         TournamentPlayer[]
+  game            Game?
+
+  @@map("tournaments")
+}
+
+enum TournamentStatus {
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model TournamentPlayer {
+  id            String                 @id @default(cuid())
+  tournamentId  String                 @map("tournament_id")
+  tournament    Tournament             @relation(fields: [tournamentId], references: [id])
+  userId        String                 @map("user_id")
+  user          User                   @relation(fields: [userId], references: [id])
+  position      Int?
+  buyInTx       String?                @map("buy_in_tx")
+  payoutTx      String?                @map("payout_tx")
+  status        TournamentPlayerStatus @default(JOINED)
+  joinedAt      DateTime               @default(now()) @map("joined_at")
+  
+  @@unique([tournamentId, userId])
+  @@map("tournament_players")
+}
+
+enum TournamentPlayerStatus {
+  JOINED
+  ACTIVE
+  ELIMINATED
+  WINNER
+}
+
+model Game {
+  id            String      @id @default(cuid())
+  tournamentId  String      @unique @map("tournament_id")
+  tournament    Tournament  @relation(fields: [tournamentId], references: [id])
+  currentHand   Int         @default(0) @map("current_hand")
+  pot           Decimal     @default(0) @db.Decimal(20, 9)
+  status        GameStatus  @default(WAITING)
+  dealerSeat    Int         @default(0) @map("dealer_seat")
+  currentSeat   Int?        @map("current_seat")
+  smallBlind    Decimal     @default(0.001) @map("small_blind") @db.Decimal(20, 9)
+  bigBlind      Decimal     @default(0.002) @map("big_blind") @db.Decimal(20, 9)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  
+  players       GamePlayer[]
+  hands         Hand[]
+
+  @@map("games")
+}
+
+enum GameStatus {
+  WAITING
+  DEALING
+  PRE_FLOP
+  FLOP
+  TURN
+  RIVER
+  SHOWDOWN
+  COMPLETED
+}
+
+model GamePlayer {
+  id            String           @id @default(cuid())
+  gameId        String           @map("game_id")
+  game          Game             @relation(fields: [gameId], references: [id])
+  userId        String           @map("user_id")
+  user          User             @relation(fields: [userId], references: [id])
+  seatPosition  Int              @map("seat_position")
+  chips         Decimal          @db.Decimal(20, 9)
+  bet           Decimal          @default(0) @db.Decimal(20, 9)
+  status        GamePlayerStatus @default(ACTIVE)
+  cards         String?          @db.Text
+  lastAction    String?          @map("last_action")
+  
+  @@unique([gameId, seatPosition])
+  @@unique([gameId, userId])
+  @@map("game_players")
+}
+
+enum GamePlayerStatus {
+  ACTIVE
+  FOLDED
+  ALL_IN
+  SITTING_OUT
+  ELIMINATED
+}
+
+model Hand {
+  id              String    @id @default(cuid())
+  gameId          String    @map("game_id")
+  game            Game      @relation(fields: [gameId], references: [id])
+  handNumber      Int       @map("hand_number")
+  communityCards  String?   @map("community_cards") @db.Text
+  pot             Decimal   @db.Decimal(20, 9)
+  winnerId        String?   @map("winner_id")
+  winner          User?     @relation("HandWinner", fields: [winnerId], references: [id])
+  actionsJson     String?   @map("actions_json") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  completedAt     DateTime? @map("completed_at")
+  
+  @@unique([gameId, handNumber])
+  @@map("hands")
+}
+
+model AdminConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("admin_config")
+}

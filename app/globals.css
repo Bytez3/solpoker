@@ -1,0 +1,345 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --poker-green: #0d5e3a;
+  --poker-green-dark: #0a4a2e;
+  --poker-felt: #1a7a4a;
+  --gold: #ffd700;
+  --chip-red: #c41e3a;
+  --chip-blue: #0066cc;
+  --chip-green: #2ecc71;
+}
+
+body {
+  font-family: var(--font-geist-sans);
+}
+
+/* Poker Table Styles */
+.poker-table-container {
+  perspective: 1000px;
+}
+
+.poker-table {
+  background: radial-gradient(ellipse at center, var(--poker-felt) 0%, var(--poker-green-dark) 100%);
+  box-shadow: 
+    inset 0 0 50px rgba(0, 0, 0, 0.5),
+    0 0 50px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.poker-table::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: 85%;
+  border: 3px solid rgba(255, 215, 0, 0.2);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Card Styles */
+.playing-card {
+  width: 3.5rem;
+  height: 5rem;
+  background: white;
+  border-radius: 0.375rem;
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.playing-card:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.playing-card.red {
+  color: #c41e3a;
+}
+
+.playing-card.black {
+  color: #000;
+}
+
+.card-back {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-back::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.25rem;
+}
+
+/* Community Cards */
+.community-cards {
+  animation: dealCards 0.5s ease-out;
+}
+
+@keyframes dealCards {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Player Seat Styles */
+.player-seat {
+  transition: all 0.3s ease;
+}
+
+.player-seat.active-turn {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    border-color: rgba(255, 215, 0, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.9);
+    border-color: rgba(255, 215, 0, 1);
+  }
+}
+
+.player-seat.current-player {
+  border-color: #a78bfa;
+  box-shadow: 0 0 30px rgba(167, 139, 250, 0.5);
+}
+
+/* Chip Stack */
+.chip {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.chip::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+.chip-red {
+  background: radial-gradient(circle, #ff4444 0%, #c41e3a 100%);
+}
+
+.chip-blue {
+  background: radial-gradient(circle, #4488ff 0%, #0066cc 100%);
+}
+
+.chip-green {
+  background: radial-gradient(circle, #44ff88 0%, #2ecc71 100%);
+}
+
+.chip-black {
+  background: radial-gradient(circle, #444 0%, #000 100%);
+}
+
+.chip-purple {
+  background: radial-gradient(circle, #9b59b6 0%, #8e44ad 100%);
+}
+
+/* Pot Display */
+.pot-display {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 2px solid var(--gold);
+  animation: potPulse 1s ease-in-out infinite;
+}
+
+@keyframes potPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+  }
+}
+
+/* Action Buttons */
+.action-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.action-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.action-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dealer Button */
+.dealer-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: radial-gradient(circle, #fff 0%, #ddd 100%);
+  border: 3px solid #444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  color: #000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  position: absolute;
+  z-index: 10;
+}
+
+/* Betting Animation */
+.bet-chips {
+  animation: betSlide 0.5s ease-out;
+}
+
+@keyframes betSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Winner Animation */
+@keyframes winnerGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 1);
+  }
+}
+
+.winner-seat {
+  animation: winnerGlow 1s ease-in-out infinite;
+}
+
+/* Avatar Styles */
+.player-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Toast Notifications */
+.toast {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--gold);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .playing-card {
+    width: 2.5rem;
+    height: 3.5rem;
+    font-size: 1rem;
+  }
+  
+  .player-avatar {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+  
+  .chip {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.625rem;
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}

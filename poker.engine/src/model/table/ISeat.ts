@@ -1,3 +1,0 @@
-interface ISeat {
-    seat:number;
-  }
