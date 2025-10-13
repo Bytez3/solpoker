@@ -12,29 +12,31 @@ export default function Home() {
   const [authenticating, setAuthenticating] = useState(false);
 
   useEffect(() => {
-    // Authenticate when wallet connects
-    if (connected && publicKey && !authenticating) {
-      authenticateWallet();
-    }
-  }, [connected, publicKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const authenticateWallet = async () => {
-    if (!publicKey || !signMessage) return;
-
-    setAuthenticating(true);
-    try {
-      // Check if already authenticated
+    // Check if already authenticated and redirect
+    if (connected && publicKey) {
       const existingToken = localStorage.getItem('poker_token');
       if (existingToken) {
         router.push('/lobby');
-        return;
       }
+    }
+  }, [connected, publicKey, router]);
 
+  const authenticateWallet = async () => {
+    if (!publicKey || !signMessage) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    setAuthenticating(true);
+    try {
       // Get message to sign
       const messageResponse = await fetch(`/api/auth/wallet?walletAddress=${publicKey.toBase58()}`);
+      if (!messageResponse.ok) {
+        throw new Error('Failed to get authentication message');
+      }
       const { message } = await messageResponse.json();
 
-      // Sign message
+      // Sign message - Phantom will show a popup
       const encodedMessage = new TextEncoder().encode(message);
       const signature = await signMessage(encodedMessage);
       const signatureBase58 = bs58.encode(signature);
@@ -55,12 +57,21 @@ export default function Home() {
         localStorage.setItem('poker_token', token);
         router.push('/lobby');
       } else {
-        alert('Authentication failed. Please try again.');
+        const errorData = await authResponse.json();
+        alert(`Authentication failed: ${errorData.error || 'Unknown error'}`);
         setAuthenticating(false);
       }
     } catch (error) {
       console.error('Authentication error:', error);
-      alert('Failed to authenticate wallet. Please try again.');
+      if (error instanceof Error) {
+        if (error.message.includes('User rejected')) {
+          alert('You rejected the signature request. Please try again and approve it.');
+        } else {
+          alert(`Failed to authenticate: ${error.message}`);
+        }
+      } else {
+        alert('Failed to authenticate wallet. Please try again.');
+      }
       setAuthenticating(false);
     }
   };
@@ -93,23 +104,44 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Call to Action */}
-          <div className="space-y-6 py-8">
-            <div className="flex flex-col items-center gap-4">
-              <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 !transition-all !duration-300 !shadow-lg !shadow-purple-500/50 hover:!shadow-xl hover:!shadow-purple-500/70 !text-lg !px-8 !py-4 !rounded-xl !font-bold" />
-              {authenticating && (
-                <div className="flex items-center gap-2 text-purple-400">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-500"></div>
-                  <span>Authenticating...</span>
+              {/* Call to Action */}
+              <div className="space-y-6 py-8">
+                <div className="flex flex-col items-center gap-4">
+                  {!connected ? (
+                    <>
+                      <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 !transition-all !duration-300 !shadow-lg !shadow-purple-500/50 hover:!shadow-xl hover:!shadow-purple-500/70 !text-lg !px-8 !py-4 !rounded-xl !font-bold" />
+                      <p className="text-sm text-gray-500">
+                        Step 1: Connect your Phantom wallet
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      {authenticating ? (
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="flex items-center gap-2 text-purple-400">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-500"></div>
+                            <span>Waiting for signature...</span>
+                          </div>
+                          <p className="text-sm text-gray-500">Check your Phantom wallet popup</p>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={authenticateWallet}
+                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/70 text-white text-lg px-12 py-4 rounded-xl font-bold"
+                          >
+                            Sign In to Play
+                          </button>
+                          <p className="text-sm text-gray-500">
+                            Step 2: Sign the message to authenticate
+                          </p>
+                          <WalletMultiButton className="!bg-gray-700 hover:!bg-gray-600 !text-sm" />
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
-              )}
-              {!authenticating && (
-                <p className="text-sm text-gray-500">
-                  Connect your wallet to enter the lobby
-                </p>
-              )}
-            </div>
-          </div>
+              </div>
 
           {/* Feature Cards with improved design */}
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
