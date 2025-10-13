@@ -1,4 +1,4 @@
-import { PlayerAction, PlayerState, GameState } from './types';
+import { PlayerAction, GameState } from './types';
 
 export interface ActionValidation {
   valid: boolean;

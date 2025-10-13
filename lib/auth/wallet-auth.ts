@@ -66,7 +66,7 @@ export async function authenticateWallet(
   walletAddress: string,
   signature: string,
   message: string
-): Promise<{ token: string; user: any } | null> {
+): Promise<{ token: string; user: { id: string; walletAddress: string; username: string | null; isAdmin: boolean } } | null> {
   // Verify signature
   const isValid = await verifyWalletSignature(walletAddress, signature, message);
   
@@ -119,7 +119,7 @@ export function verifyJWT(token: string): JWTPayload | null {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     return decoded;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -127,7 +127,7 @@ export function verifyJWT(token: string): JWTPayload | null {
 /**
  * Get user from JWT token
  */
-export async function getUserFromToken(token: string): Promise<any | null> {
+export async function getUserFromToken(token: string): Promise<{ id: string; walletAddress: string; username: string | null; isAdmin: boolean } | null> {
   const payload = verifyJWT(token);
   
   if (!payload) {

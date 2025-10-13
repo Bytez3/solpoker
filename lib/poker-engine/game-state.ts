@@ -1,13 +1,11 @@
 import { 
   GameState, 
   PlayerState, 
-  BettingRound, 
-  Card,
+  BettingRound,
   PlayerAction,
-  WinnerInfo,
 } from './types';
-import { createDeck, shuffleDeck, dealCards, cardsToString } from './deck';
-import { evaluateHand, findWinners } from './hand-evaluator';
+import { createDeck, shuffleDeck, dealCards } from './deck';
+import { evaluateHand } from './hand-evaluator';
 import { applyAction, getNextPlayerSeat, isBettingRoundComplete } from './actions';
 import { 
   calculatePots, 
@@ -16,7 +14,6 @@ import {
   awardPot, 
   eliminateBrokePlayers,
   getActivePlayers,
-  countActivePlayers,
 } from './pot-calculator';
 
 /**
@@ -77,7 +74,7 @@ export function startNewHand(gameState: GameState): GameState {
   newState.handNumber++;
   
   // Reset players
-  newState.players = newState.players.map((player, index) => {
+  newState.players = newState.players.map((player) => {
     const seatPosition = player.seatPosition;
     const dealerSeat = newState.dealerSeat;
     
@@ -243,7 +240,7 @@ export function advanceBettingRound(gameState: GameState): GameState {
  * Run all-in showdown (deal remaining cards without betting)
  */
 function runAllInShowdown(gameState: GameState): GameState {
-  let newState = { ...gameState };
+  const newState = { ...gameState };
   
   // Deal remaining community cards
   while (newState.communityCards.length < 5) {
@@ -272,7 +269,7 @@ export function determineWinner(gameState: GameState): GameState {
     const allCards = [...player.cards, ...newState.communityCards];
     const evaluation = evaluateHand(allCards);
     return {
-      playerId: player.userId,
+      userId: player.userId,
       hand: evaluation,
       handValue: evaluation.value,
     };

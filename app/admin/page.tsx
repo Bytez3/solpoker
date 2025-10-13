@@ -10,7 +10,22 @@ const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 export default function AdminPage() {
   const { connected, publicKey } = useWallet();
   const router = useRouter();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<{
+    stats: {
+      totalTournaments: number;
+      activeTournaments: number;
+      totalPlayers: number;
+      totalRakeCollected: number;
+    };
+    recentTournaments: Array<{
+      id: string;
+      name: string;
+      status: string;
+      buyIn: number | { toFixed: (digits: number) => string; toString: () => string };
+      players: unknown[];
+      maxPlayers: number;
+    }>;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
@@ -26,7 +41,7 @@ export default function AdminPage() {
     }
 
     fetchStats();
-  }, [connected, router]);
+  }, [connected, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchStats = async () => {
     try {
@@ -229,7 +244,7 @@ export default function AdminPage() {
 
             {stats && stats.recentTournaments.length > 0 ? (
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {stats.recentTournaments.map((tournament: any) => (
+                {stats.recentTournaments.map((tournament) => (
                   <div
                     key={tournament.id}
                     className="bg-gray-700 rounded-lg p-4 border border-gray-600"

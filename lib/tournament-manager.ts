@@ -5,8 +5,8 @@ import {
   processPlayerAction,
   isGameOver,
   getGameWinner,
-  GameState,
 } from './poker-engine/game-state';
+import { GameState } from './poker-engine/types';
 import { PlayerAction } from './poker-engine/types';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -380,8 +380,8 @@ export class TournamentManager {
     }
   }
   
-  private mapGameStatus(status: string): any {
-    const statusMap: Record<string, string> = {
+  private mapGameStatus(status: string): 'WAITING' | 'DEALING' | 'PRE_FLOP' | 'SHOWDOWN' | 'COMPLETED' {
+    const statusMap: Record<string, 'WAITING' | 'DEALING' | 'PRE_FLOP' | 'SHOWDOWN' | 'COMPLETED'> = {
       'waiting': 'WAITING',
       'dealing': 'DEALING',
       'betting': 'PRE_FLOP',
@@ -391,8 +391,8 @@ export class TournamentManager {
     return statusMap[status] || 'WAITING';
   }
   
-  private mapPlayerStatus(status: string): any {
-    const statusMap: Record<string, string> = {
+  private mapPlayerStatus(status: string): 'ACTIVE' | 'FOLDED' | 'ALL_IN' | 'SITTING_OUT' | 'ELIMINATED' {
+    const statusMap: Record<string, 'ACTIVE' | 'FOLDED' | 'ALL_IN' | 'SITTING_OUT' | 'ELIMINATED'> = {
       'active': 'ACTIVE',
       'folded': 'FOLDED',
       'all_in': 'ALL_IN',

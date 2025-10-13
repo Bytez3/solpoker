@@ -4,6 +4,17 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 
+interface Card {
+  rank: string;
+  suit: string;
+}
+
+interface LastAction {
+  action: string;
+  amount?: number;
+  timestamp: number;
+}
+
 interface PlayerState {
   userId: string;
   walletAddress: string;
@@ -11,9 +22,9 @@ interface PlayerState {
   seatPosition: number;
   chips: number;
   bet: number;
-  cards: any[];
+  cards: Card[];
   status: string;
-  lastAction?: any;
+  lastAction?: LastAction;
   isDealer: boolean;
   isSmallBlind: boolean;
   isBigBlind: boolean;
@@ -23,7 +34,7 @@ interface GameState {
   gameId: string;
   tournamentId: string;
   players: PlayerState[];
-  communityCards: any[];
+  communityCards: Card[];
   pot: number;
   currentBet: number;
   currentPlayerSeat: number | null;
@@ -86,7 +97,7 @@ export default function GamePage() {
     const interval = setInterval(fetchGameState, 2000); // Poll every 2 seconds
 
     return () => clearInterval(interval);
-  }, [connected, tournamentId]);
+  }, [connected, tournamentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchGameState = async () => {
     try {

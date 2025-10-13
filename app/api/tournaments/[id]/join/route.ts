@@ -9,8 +9,9 @@ import { tournamentManager } from '@/lib/tournament-manager';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const token = extractToken(request.headers.get('authorization'));
     
@@ -42,7 +43,7 @@ export async function POST(
     
     // Get tournament
     const tournament = await prisma.tournament.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         players: true,
       },
@@ -81,7 +82,7 @@ export async function POST(
     // Add player to tournament
     const tournamentPlayer = await prisma.tournamentPlayer.create({
       data: {
-        tournamentId: params.id,
+        tournamentId: id,
         userId: user.id,
         buyInTx: transactionSignature,
         status: 'JOINED',
@@ -98,12 +99,12 @@ export async function POST(
     });
     
     // Check if tournament is ready to start (6 players)
-    const isReady = await tournamentManager.isTournamentReady(params.id);
+    const isReady = await tournamentManager.isTournamentReady(id);
     
     if (isReady) {
       // Start the tournament
       try {
-        const gameState = await tournamentManager.startTournament(params.id);
+        await tournamentManager.startTournament(id);
         
         return NextResponse.json({
           tournamentPlayer,

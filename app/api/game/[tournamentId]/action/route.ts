@@ -9,8 +9,9 @@ import { PlayerAction } from '@/lib/poker-engine/types';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { tournamentId: string } }
+  { params }: { params: Promise<{ tournamentId: string }> }
 ) {
+  const { tournamentId } = await params;
   try {
     const token = extractToken(request.headers.get('authorization'));
     
@@ -43,7 +44,7 @@ export async function POST(
     // Process action
     try {
       const gameState = await tournamentManager.processAction(
-        params.tournamentId,
+        tournamentId,
         user.id,
         action as PlayerAction,
         amount
@@ -53,9 +54,10 @@ export async function POST(
         success: true,
         gameState,
       });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Invalid action';
       return NextResponse.json(
-        { error: error.message || 'Invalid action' },
+        { error: errorMessage },
         { status: 400 }
       );
     }

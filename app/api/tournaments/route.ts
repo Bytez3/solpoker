@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     
-    const where = status ? { status: status as any } : {};
+    type TournamentStatus = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+    const where = status ? { status: status as TournamentStatus } : {};
     
     const tournaments = await prisma.tournament.findMany({
       where,

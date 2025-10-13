@@ -9,8 +9,9 @@ import { sanitizeGameStateForPlayer } from '@/lib/poker-engine/game-state';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tournamentId: string } }
+  { params }: { params: Promise<{ tournamentId: string }> }
 ) {
+  const { tournamentId } = await params;
   try {
     const token = extractToken(request.headers.get('authorization'));
     
@@ -30,7 +31,7 @@ export async function GET(
       );
     }
     
-    const gameState = tournamentManager.getGameState(params.tournamentId);
+    const gameState = tournamentManager.getGameState(tournamentId);
     
     if (!gameState) {
       return NextResponse.json(

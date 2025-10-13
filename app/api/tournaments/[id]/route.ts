@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getUserFromToken, extractToken } from '@/lib/auth/wallet-auth';
 
 /**
  * GET /api/tournaments/[id]
@@ -8,11 +7,12 @@ import { getUserFromToken, extractToken } from '@/lib/auth/wallet-auth';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const tournament = await prisma.tournament.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         players: {
           include: {

@@ -4,18 +4,17 @@ import { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 interface Tournament {
   id: string;
   name: string;
-  buyIn: number;
-  rakePercentage: number;
+  buyIn: number | { toFixed: (digits: number) => string; toString: () => string };
+  rakePercentage: number | { toString: () => string };
   status: string;
   maxPlayers: number;
-  players: any[];
+  players: unknown[];
   createdAt: string;
 }
 

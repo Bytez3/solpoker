@@ -16,7 +16,7 @@ export default function Home() {
     if (connected && publicKey && !authenticating) {
       authenticateWallet();
     }
-  }, [connected, publicKey]);
+  }, [connected, publicKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const authenticateWallet = async () => {
     if (!publicKey || !signMessage) return;
@@ -85,9 +85,9 @@ export default function Home() {
               <div className="h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full"></div>
             </div>
             
-            <p className="text-2xl md:text-3xl font-light text-gray-300 tracking-wide">
-              Decentralized PvP Texas Hold'em
-            </p>
+                <p className="text-2xl md:text-3xl font-light text-gray-300 tracking-wide">
+                  Decentralized PvP Texas Hold&apos;em
+                </p>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Play poker on the blockchain with instant payouts and provably fair gameplay
             </p>
