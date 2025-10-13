@@ -46,7 +46,11 @@ export default function AdminPage() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('poker_token');
-      if (!token) return;
+      if (!token) {
+        console.log('No token found, redirecting to home');
+        router.push('/');
+        return;
+      }
 
       const response = await fetch('/api/admin/stats', {
         headers: {
@@ -58,11 +62,17 @@ export default function AdminPage() {
         const data = await response.json();
         setStats(data);
       } else if (response.status === 403) {
-        alert('Admin access required');
-        router.push('/lobby');
+        alert('Admin access required. Please sign in with the admin wallet: 3rWf9fKhQFFsjAfyM1cgtoBpeLZL75b77C8o8Fz9QeNF');
+        router.push('/');
+      } else if (response.status === 401) {
+        alert('Session expired. Please sign in again.');
+        localStorage.removeItem('poker_token');
+        router.push('/');
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      alert('Failed to load admin panel. Please try again.');
+      router.push('/');
     } finally {
       setLoading(false);
     }
