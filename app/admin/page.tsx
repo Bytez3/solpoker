@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
+import bs58 from 'bs58';
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 export default function AdminPage() {
-  const { connected, publicKey } = useWallet();
+  const { connected, publicKey, signMessage } = useWallet();
   const router = useRouter();
   const [stats, setStats] = useState<{
     stats: {
@@ -28,6 +29,7 @@ export default function AdminPage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [authenticating, setAuthenticating] = useState(false);
 
   // Form state
   const [name, setName] = useState('');
@@ -36,19 +38,82 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!connected) {
-      router.push('/');
+      // Don't redirect immediately, show wallet connection first
+      return;
+    }
+
+    // If connected but no token, we need to authenticate
+    const token = localStorage.getItem('poker_token');
+    if (!token) {
+      console.log('Connected but no token, staying on admin page to authenticate');
       return;
     }
 
     fetchStats();
-  }, [connected, router]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [connected, router]);
+
+  const authenticateForAdmin = async () => {
+    if (!publicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    setAuthenticating(true);
+    try {
+      // Get message to sign
+      const messageResponse = await fetch(`/api/auth/wallet?walletAddress=${publicKey.toBase58()}`);
+      if (!messageResponse.ok) {
+        throw new Error('Failed to get authentication message');
+      }
+      const { message } = await messageResponse.json();
+
+      // Sign message
+      const encodedMessage = new TextEncoder().encode(message);
+      const signature = await signMessage(encodedMessage);
+      const signatureBase58 = bs58.encode(signature);
+
+      // Verify and get token
+      const authResponse = await fetch('/api/auth/wallet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          walletAddress: publicKey.toBase58(),
+          signature: signatureBase58,
+          message,
+        }),
+      });
+
+      if (authResponse.ok) {
+        const { token } = await authResponse.json();
+        localStorage.setItem('poker_token', token);
+        // Refresh stats after authentication
+        fetchStats();
+      } else {
+        const errorData = await authResponse.json();
+        alert(`Authentication failed: ${errorData.error || 'Unknown error'}`);
+        setAuthenticating(false);
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('User rejected')) {
+          alert('You rejected the signature request. Please try again and approve it.');
+        } else {
+          alert(`Failed to authenticate: ${error.message}`);
+        }
+      } else {
+        alert('Failed to authenticate wallet. Please try again.');
+      }
+      setAuthenticating(false);
+    }
+  };
 
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('poker_token');
       if (!token) {
-        console.log('No token found, redirecting to home');
-        router.push('/');
+        console.log('No token found, cannot fetch stats');
+        setLoading(false);
         return;
       }
 
@@ -63,17 +128,16 @@ export default function AdminPage() {
         setStats(data);
       } else if (response.status === 403) {
         alert('Admin access required. Please sign in with the admin wallet: 3rWf9fKhQFFsjAfyM1cgtoBpeLZL75b77C8o8Fz9QeNF');
-        router.push('/');
+        localStorage.removeItem('poker_token');
+        setLoading(false);
       } else if (response.status === 401) {
         alert('Session expired. Please sign in again.');
         localStorage.removeItem('poker_token');
-        router.push('/');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
       alert('Failed to load admin panel. Please try again.');
-      router.push('/');
-    } finally {
       setLoading(false);
     }
   };
@@ -121,14 +185,68 @@ export default function AdminPage() {
     }
   };
 
-  if (!connected || loading) {
+  // Check if we need authentication
+  const hasToken = localStorage.getItem('poker_token');
+
+  if (!connected) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 !transition-all !duration-300 !shadow-lg !shadow-purple-500/50 hover:!shadow-xl hover:!shadow-purple-500/70 !text-lg !px-8 !py-4 !rounded-xl !font-bold" />
+          <p className="text-gray-400">
+            Connect your admin wallet to access the admin panel
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && !hasToken) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          {loading && <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>}
-          <p className="mt-4 text-gray-400">
-            {loading ? 'Loading...' : 'Please connect your wallet'}
-          </p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          <p className="mt-4 text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasToken) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md mx-auto px-4">
+          <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
+            <h2 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+              Admin Authentication Required
+            </h2>
+            <p className="text-gray-400 mb-6">
+              Please authenticate with your admin wallet to access the admin panel.
+            </p>
+            <div className="bg-gray-700 rounded-lg p-4 mb-6 text-left">
+              <p className="text-sm text-gray-300 mb-2">Admin Wallet Address:</p>
+              <p className="font-mono text-xs text-purple-400 break-all">
+                3rWf9fKhQFFsjAfyM1cgtoBpeLZL75b77C8o8Fz9QeNF
+              </p>
+            </div>
+            <button
+              onClick={authenticateForAdmin}
+              disabled={authenticating}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300"
+            >
+              {authenticating ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Authenticating...</span>
+                </div>
+              ) : (
+                'Authenticate as Admin'
+              )}
+            </button>
+            <p className="text-xs text-gray-500 mt-3">
+              Check your Phantom wallet for the signature request
+            </p>
+          </div>
         </div>
       </div>
     );
