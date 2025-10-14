@@ -357,7 +357,7 @@ export default function GamePage() {
           {/* Community Cards */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <div className="community-cards flex gap-3 p-6 rounded-xl bg-black/20 backdrop-blur-sm border border-white/10">
-              {gameState?.communityCards?.length > 0 ? (
+              {gameState?.communityCards && gameState.communityCards.length > 0 ? (
                 gameState.communityCards.map((card, i) => (
                   <div 
                     key={i} 
@@ -379,7 +379,7 @@ export default function GamePage() {
           </div>
 
           {/* Player Seats */}
-          {gameState?.players?.map((player) => {
+          {gameState?.players && gameState.players.map((player) => {
             const isCurrentPlayer = player.walletAddress === publicKey?.toBase58();
             const isActive = player.status === 'active';
             const isTurn = gameState?.currentPlayerSeat === player.seatPosition;
