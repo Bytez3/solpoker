@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
 
@@ -24,7 +24,7 @@ interface Tournament {
 
 export default function LobbyPage() {
   const { connected, publicKey, sendTransaction } = useWallet();
-  const { connection } = useConnection();
+  // const { connection } = useConnection(); // Not used in demo mode
   const router = useRouter();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +85,6 @@ export default function LobbyPage() {
         // Production mode: Create real Solana transaction
         console.log('🔄 Attempting real Solana transaction...');
         try {
-          const { pokerProgram } = await import('@/lib/solana/poker-program');
           const { PublicKey, SystemProgram, Transaction, TransactionInstruction } = await import('@solana/web3.js');
 
           console.log('📋 Creating tournament join transaction for:', tournament.id);
@@ -116,7 +115,9 @@ export default function LobbyPage() {
           console.log('✅ Real Solana transaction completed:', signature);
         } catch (error) {
           console.error('❌ Solana transaction failed:', error);
-          console.error('Error details:', error.message, error.stack);
+          if (error instanceof Error) {
+            console.error('Error details:', error.message, error.stack);
+          }
           alert('Failed to join tournament. Please try again.');
           setJoining(null);
           return;

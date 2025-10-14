@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 // Temporarily enable demo mode for testing until Solana program is deployed
 const DEMO_MODE = true;
@@ -84,7 +84,7 @@ export default function GamePage() {
   const params = useParams();
   const router = useRouter();
   const { connected, publicKey, sendTransaction } = useWallet();
-  const { connection } = useConnection();
+  // const { connection } = useConnection(); // Not used in demo mode
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionAmount, setActionAmount] = useState(0);
@@ -155,16 +155,17 @@ export default function GamePage() {
           return;
         }
 
-        const { pokerProgram } = await import('@/lib/solana/poker-program');
-        const { PublicKey, Transaction, TransactionInstruction } = await import('@solana/web3.js');
+        // TODO: Implement real Solana program integration
+        // const { pokerProgram } = await import('@/lib/solana/poker-program');
+        // const { PublicKey, Transaction, TransactionInstruction } = await import('@/solana/web3.js');
 
         try {
           // For now, we'll create a simple transaction
           // In a real implementation, you'd need more complex logic based on the action type
-          const playerWallet = new PublicKey(publicKey.toBase58());
+          // const playerWallet = new PublicKey(publicKey.toBase58());
 
           // Create a simple transaction (this is a placeholder - you'd need actual program integration)
-          const transaction = new Transaction();
+          // const transaction = new Transaction();
 
           // For demo purposes, we'll just use the API route for game state updates
           // In production, you'd integrate with the actual Solana program
