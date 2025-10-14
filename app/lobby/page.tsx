@@ -57,7 +57,20 @@ export default function LobbyPage() {
   };
 
   const handleJoinTournament = async (tournament: Tournament) => {
-    if (!publicKey) return;
+    if (!publicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    if (!connected) {
+      alert('Wallet not connected. Please connect your wallet and try again.');
+      return;
+    }
+
+    console.log('🚀 Starting tournament join process...');
+    console.log('👛 Wallet connected:', connected);
+    console.log('🔑 Public key:', publicKey.toBase58());
+    console.log('🎮 Demo mode:', DEMO_MODE);
 
     setJoining(tournament.id);
 
@@ -92,8 +105,13 @@ export default function LobbyPage() {
           );
 
           console.log('✍️ Requesting transaction signature...');
-          const signature = await sendTransaction(transaction, connection);
 
+          // Check if sendTransaction is available
+          if (!sendTransaction) {
+            throw new Error('sendTransaction not available. Wallet may not be ready.');
+          }
+
+          const signature = await sendTransaction(transaction, connection);
           transactionSignature = signature;
           console.log('✅ Real Solana transaction completed:', signature);
         } catch (error) {
