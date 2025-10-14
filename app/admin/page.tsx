@@ -6,8 +6,8 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
 import bs58 from 'bs58';
 
-// Temporarily enable demo mode for testing until Solana program is deployed
-const DEMO_MODE = true;
+// Production mode - real Solana transactions enabled
+const DEMO_MODE = false;
 
 export default function AdminPage() {
   const { connected, publicKey, signMessage } = useWallet();
@@ -158,6 +158,7 @@ export default function AdminPage() {
       if (!hasToken) return;
 
       // TODO: Call Solana program to initialize tournament escrow
+      // For now using mock address - replace with real program integration
       const mockEscrowAddress = `escrow_${Date.now()}`;
 
       const response = await fetch('/api/tournaments', {
@@ -294,10 +295,10 @@ export default function AdminPage() {
         </div>
       </header>
 
-      {/* Demo Mode Banner */}
-      {DEMO_MODE && (
-        <div className="bg-yellow-600 text-black px-4 py-2 text-center">
-          <span className="font-semibold">🎮 DEMO MODE</span> - Creating tournaments without deploying smart contract
+      {/* Network Status Banner */}
+      {!DEMO_MODE && (
+        <div className="bg-green-600 text-white px-4 py-2 text-center">
+          <span className="font-semibold">⚡ SOLANA DEVNET</span> - Real blockchain transactions enabled
         </div>
       )}
 

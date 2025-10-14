@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 
-// Demo mode is handled by the API and components
+// Production mode - real Solana transactions enabled
+const DEMO_MODE = false;
+console.log('🎮 Demo mode enabled:', DEMO_MODE);
 
 interface Card {
   rank: string;
@@ -101,8 +103,8 @@ function getPlayerInitials(username?: string, walletAddress?: string): string {
 export default function GamePage() {
   const params = useParams();
   const router = useRouter();
-  const { connected, publicKey } = useWallet();
-  // const { connection } = useConnection(); // Not used in demo mode
+  const { connected, publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [waitingState, setWaitingState] = useState<TournamentWaitingState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -155,24 +157,76 @@ export default function GamePage() {
       const token = localStorage.getItem('poker_token');
       if (!token) return;
 
-      // Process game action (demo mode for now)
-      console.log('🎮 Processing game action:', action);
+      if (DEMO_MODE) {
+        // Demo mode: Use API route
+        console.log('🎮 Demo mode: Processing game action:', action);
 
-      const response = await fetch(`/api/game/${tournamentId}/action`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ action, amount }),
-      });
+        const response = await fetch(`/api/game/${tournamentId}/action`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action, amount }),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        setGameState(data.gameState);
+        if (response.ok) {
+          const data = await response.json();
+          setGameState(data.gameState);
+        } else {
+          const error = await response.json();
+          alert(error.error);
+        }
       } else {
-        const error = await response.json();
-        alert(error.error);
+        // Production mode: Create real Solana transaction
+        console.log('🔄 Processing real Solana game action:', action);
+
+        if (!publicKey || !sendTransaction) {
+          alert('Wallet not connected properly');
+          return;
+        }
+
+        try {
+          // For now, create a simple memo transaction for game actions
+          // TODO: Replace with actual poker program integration
+          const { Transaction, TransactionInstruction, SystemProgram, PublicKey } = await import('@solana/web3.js');
+
+          const transaction = new Transaction().add(
+            new TransactionInstruction({
+              keys: [
+                { pubkey: new PublicKey(publicKey.toBase58()), isSigner: true, isWritable: true },
+                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+              ],
+              programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+              data: Buffer.from(`Game action: ${action}${amount ? ` ${amount} SOL` : ''} in tournament ${tournamentId}`),
+            })
+          );
+
+          console.log('✍️ Requesting game action transaction signature...');
+          const signature = await sendTransaction(transaction, connection);
+
+          // After successful transaction, update game state via API
+          const response = await fetch(`/api/game/${tournamentId}/action`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ action, amount, transactionSignature: signature }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setGameState(data.gameState);
+            console.log('✅ Real Solana game action completed:', signature);
+          } else {
+            const error = await response.json();
+            alert(error.error);
+          }
+        } catch (error) {
+          console.error('❌ Solana game action failed:', error);
+          alert('Failed to process game action. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Error processing action:', error);

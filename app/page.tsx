@@ -267,13 +267,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Demo Mode Notice */}
+            {/* Network Status Notice */}
             <div className="mt-16 text-center">
-              <div className="inline-flex items-center gap-3 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-6 py-3 backdrop-blur-sm">
-                <div className="text-2xl animate-spin">🎮</div>
+              <div className="inline-flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-full px-6 py-3 backdrop-blur-sm">
+                <div className="text-2xl animate-pulse">⚡</div>
                 <div className="text-left">
-                  <div className="text-yellow-400 font-semibold">Demo Mode Active</div>
-                  <div className="text-sm text-yellow-300">Test all features without real SOL</div>
+                  <div className="text-green-400 font-semibold">Solana Devnet Active</div>
+                  <div className="text-sm text-green-300">Real blockchain transactions enabled</div>
                 </div>
               </div>
             </div>

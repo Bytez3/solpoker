@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
 
-// Temporarily enable demo mode for testing until Solana program is deployed
-const DEMO_MODE = true;
+// Production mode - real Solana transactions enabled
+const DEMO_MODE = false;
 console.log('🎮 Demo mode enabled:', DEMO_MODE);
 console.log('🔍 DEMO_MODE type:', typeof DEMO_MODE);
 console.log('🔍 DEMO_MODE value:', DEMO_MODE);
@@ -30,7 +30,7 @@ interface Tournament {
 
 export default function LobbyPage() {
   const { connected, publicKey, sendTransaction } = useWallet();
-  // const { connection } = useConnection(); // Not used in demo mode
+  const { connection } = useConnection();
   const router = useRouter();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,16 +91,34 @@ export default function LobbyPage() {
         // Production mode: Create real Solana transaction
         console.log('🔄 Attempting real Solana transaction...');
         try {
+          const { PublicKey } = await import('@solana/web3.js');
+
           // Check if sendTransaction is available
           if (!sendTransaction) {
             throw new Error('sendTransaction not available. Wallet may not be ready.');
           }
 
-          // For demo mode, we'll use a mock signature instead of real transaction
-          // TODO: Replace with actual Solana program integration when deployed
-          const signature = `demo_tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          console.log('📋 Creating tournament join transaction for:', tournament.id);
+          const playerWallet = new PublicKey(publicKey.toBase58());
+
+          // Create a simple memo transaction for now
+          // TODO: Replace with actual poker program integration
+          const { Transaction, TransactionInstruction, SystemProgram } = await import('@solana/web3.js');
+          const transaction = new Transaction().add(
+            new TransactionInstruction({
+              keys: [
+                { pubkey: playerWallet, isSigner: true, isWritable: true },
+                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+              ],
+              programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+              data: Buffer.from(`Joining tournament: ${tournament.id}`),
+            })
+          );
+
+          console.log('✍️ Requesting transaction signature...');
+          const signature = await sendTransaction(transaction, connection);
           transactionSignature = signature;
-          console.log('✅ Demo transaction signature generated:', signature);
+          console.log('✅ Real Solana transaction completed:', signature);
         } catch (error) {
           console.error('❌ Solana transaction failed:', error);
           if (error instanceof Error) {
