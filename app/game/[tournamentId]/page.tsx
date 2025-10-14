@@ -335,11 +335,11 @@ export default function GamePage() {
       <div className="max-w-6xl mx-auto mb-4">
         <div className="bg-gray-800 rounded-lg p-4 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold">Hand #{gameState.handNumber}</h2>
-            <p className="text-sm text-gray-400">{gameState.bettingRound.replace('_', ' ')}</p>
+            <h2 className="text-xl font-bold">Hand #{gameState?.handNumber || 0}</h2>
+            <p className="text-sm text-gray-400">{gameState?.bettingRound?.replace('_', ' ') || 'Pre-Flop'}</p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-green-400">{gameState.pot.toFixed(3)} SOL</p>
+            <p className="text-2xl font-bold text-green-400">{gameState?.pot?.toFixed(3) || '0.000'} SOL</p>
             <p className="text-sm text-gray-400">Pot</p>
           </div>
         </div>
@@ -351,13 +351,13 @@ export default function GamePage() {
           {/* Pot Display */}
           <div className="absolute top-8 left-1/2 transform -translate-x-1/2 pot-display rounded-lg px-6 py-3">
             <div className="text-xs text-yellow-400 font-semibold uppercase tracking-wider">Pot</div>
-            <div className="text-3xl font-bold text-yellow-400">{gameState.pot.toFixed(3)} SOL</div>
+            <div className="text-3xl font-bold text-yellow-400">{gameState?.pot?.toFixed(3) || '0.000'} SOL</div>
           </div>
 
           {/* Community Cards */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <div className="community-cards flex gap-3 p-6 rounded-xl bg-black/20 backdrop-blur-sm border border-white/10">
-              {gameState.communityCards.length > 0 ? (
+              {gameState?.communityCards?.length > 0 ? (
                 gameState.communityCards.map((card, i) => (
                   <div 
                     key={i} 
@@ -379,10 +379,10 @@ export default function GamePage() {
           </div>
 
           {/* Player Seats */}
-          {gameState.players.map((player) => {
+          {gameState?.players?.map((player) => {
             const isCurrentPlayer = player.walletAddress === publicKey?.toBase58();
             const isActive = player.status === 'active';
-            const isTurn = gameState.currentPlayerSeat === player.seatPosition;
+            const isTurn = gameState?.currentPlayerSeat === player.seatPosition;
 
             // Position around the table
             const positions = [
@@ -493,7 +493,7 @@ export default function GamePage() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-yellow-400">Your Turn</h3>
               <div className="text-sm text-gray-400">
-                Current Bet: <span className="text-white font-semibold">{gameState.currentBet.toFixed(3)} SOL</span>
+                Current Bet: <span className="text-white font-semibold">{gameState?.currentBet?.toFixed(3) || '0.000'} SOL</span>
               </div>
             </div>
             
@@ -534,15 +534,15 @@ export default function GamePage() {
                     type="number"
                     value={actionAmount}
                     onChange={(e) => setActionAmount(parseFloat(e.target.value) || 0)}
-                    min={gameState.currentBet + gameState.bigBlind}
-                    max={currentPlayer.chips}
-                    step={gameState.bigBlind}
+                    min={(gameState?.currentBet || 0) + (gameState?.bigBlind || 0)}
+                    max={currentPlayer?.chips || 0}
+                    step={gameState?.bigBlind || 0}
                     className="flex-1 bg-gray-700 text-white rounded-xl px-4 py-3 font-mono text-lg border-2 border-gray-600 focus:border-purple-500 focus:outline-none"
                     placeholder="Raise amount"
                   />
                   <button
                     onClick={() => handleAction('raise', actionAmount)}
-                    disabled={actionAmount < gameState.currentBet + gameState.bigBlind}
+                    disabled={actionAmount < (gameState?.currentBet || 0) + (gameState?.bigBlind || 0)}
                     className="action-button bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transform hover:scale-105 transition-all"
                   >
                     <div className="text-xl">↗️</div>
@@ -553,19 +553,19 @@ export default function GamePage() {
                 {/* Quick Bet Buttons */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setActionAmount(gameState.currentBet + gameState.bigBlind)}
+                    onClick={() => setActionAmount((gameState?.currentBet || 0) + (gameState?.bigBlind || 0))}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors"
                   >
                     Min
                   </button>
                   <button
-                    onClick={() => setActionAmount(gameState.pot / 2)}
+                    onClick={() => setActionAmount((gameState?.pot || 0) / 2)}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors"
                   >
                     1/2 Pot
                   </button>
                   <button
-                    onClick={() => setActionAmount(gameState.pot)}
+                    onClick={() => setActionAmount(gameState?.pot || 0)}
                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors"
                   >
                     Pot
@@ -594,7 +594,7 @@ export default function GamePage() {
       )}
 
       {/* Game Over */}
-      {gameState.status === 'complete' && (
+      {gameState?.status === 'complete' && (
         <div className="max-w-2xl mx-auto mt-8">
           <div className="bg-gray-800 rounded-lg p-6 text-center">
             <h3 className="text-2xl font-bold mb-4">Hand Complete</h3>
