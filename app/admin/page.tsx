@@ -86,6 +86,7 @@ export default function AdminPage() {
       if (authResponse.ok) {
         const { token } = await authResponse.json();
         localStorage.setItem('poker_token', token);
+        setHasToken(token); // Update state
         // Refresh stats after authentication
         fetchStats();
       } else {
@@ -128,11 +129,17 @@ export default function AdminPage() {
         setStats(data);
       } else if (response.status === 403) {
         alert('Admin access required. Please sign in with the admin wallet: 3rWf9fKhQFFsjAfyM1cgtoBpeLZL75b77C8o8Fz9QeNF');
-        localStorage.removeItem('poker_token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('poker_token');
+          setHasToken(null);
+        }
         setLoading(false);
       } else if (response.status === 401) {
         alert('Session expired. Please sign in again.');
-        localStorage.removeItem('poker_token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('poker_token');
+          setHasToken(null);
+        }
         setLoading(false);
       }
     } catch (error) {
@@ -147,8 +154,7 @@ export default function AdminPage() {
     setCreating(true);
 
     try {
-      const token = localStorage.getItem('poker_token');
-      if (!token) return;
+      if (!hasToken) return;
 
       // TODO: Call Solana program to initialize tournament escrow
       const mockEscrowAddress = `escrow_${Date.now()}`;
@@ -157,7 +163,7 @@ export default function AdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${hasToken}`,
         },
         body: JSON.stringify({
           name,
@@ -185,8 +191,14 @@ export default function AdminPage() {
     }
   };
 
-  // Check if we need authentication
-  const hasToken = localStorage.getItem('poker_token');
+  // Check if we need authentication (only on client side)
+  const [hasToken, setHasToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Only access localStorage on client side
+    const token = localStorage.getItem('poker_token');
+    setHasToken(token);
+  }, []);
 
   if (!connected) {
     return (
@@ -201,12 +213,24 @@ export default function AdminPage() {
     );
   }
 
-  if (loading && !hasToken) {
+  if (loading && hasToken === null) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
           <p className="mt-4 text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasToken === null) {
+    // Still loading localStorage check
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          <p className="mt-4 text-gray-400">Checking authentication...</p>
         </div>
       </div>
     );
