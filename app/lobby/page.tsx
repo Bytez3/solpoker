@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
 
@@ -19,7 +19,8 @@ interface Tournament {
 }
 
 export default function LobbyPage() {
-  const { connected, publicKey } = useWallet();
+  const { connected, publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const router = useRouter();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,19 +56,34 @@ export default function LobbyPage() {
     if (!publicKey) return;
 
     setJoining(tournament.id);
-    
+
     try {
       let transactionSignature: string;
-      
+
       if (DEMO_MODE) {
         // Demo mode: Use mock transaction
         transactionSignature = `demo_tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         console.log('🎮 Demo mode: Using mock transaction signature:', transactionSignature);
       } else {
-        // Production mode: Call Solana program to join tournament
-        // TODO: Implement actual Solana transaction
-        alert('Real Solana transactions not yet implemented. Enable DEMO_MODE in .env');
-        return;
+        // Production mode: Create real Solana transaction
+        const { pokerProgram } = await import('@/lib/solana/poker-program');
+        const { PublicKey } = await import('@solana/web3.js');
+
+        try {
+          const playerWallet = new PublicKey(publicKey.toBase58());
+          const transaction = await pokerProgram.joinTournament(playerWallet, tournament.id);
+
+          // Request user to sign and send transaction
+          const signature = await sendTransaction(transaction, connection);
+
+          transactionSignature = signature;
+          console.log('✅ Real Solana transaction completed:', signature);
+        } catch (error) {
+          console.error('❌ Solana transaction failed:', error);
+          alert('Failed to join tournament. Please try again.');
+          setJoining(null);
+          return;
+        }
       }
       
       // Get auth token from localStorage (set during wallet authentication)
