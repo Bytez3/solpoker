@@ -49,6 +49,25 @@ interface GameState {
   status: string;
 }
 
+interface TournamentWaitingState {
+  tournament: {
+    id: string;
+    name: string;
+    buyIn: number;
+    maxPlayers: number;
+    players: Array<{
+      user: {
+        id: string;
+        walletAddress: string;
+        username: string | null;
+      };
+    }>;
+  };
+  gameStarted: false;
+  availableSeats: number;
+  playerSeat: number;
+}
+
 // Helper function for suit symbols
 function getSuitSymbol(suit: string): string {
   const symbols: Record<string, string> = {
@@ -86,6 +105,7 @@ export default function GamePage() {
   const { connected, publicKey, sendTransaction } = useWallet();
   // const { connection } = useConnection(); // Not used in demo mode
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [waitingState, setWaitingState] = useState<TournamentWaitingState | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionAmount, setActionAmount] = useState(0);
 
@@ -116,7 +136,13 @@ export default function GamePage() {
 
       if (response.ok) {
         const data = await response.json();
-        setGameState(data.gameState);
+        if (data.gameStarted && data.gameState) {
+          setGameState(data.gameState);
+          setWaitingState(null);
+        } else if (data.tournament) {
+          setWaitingState(data as TournamentWaitingState);
+          setGameState(null);
+        }
       }
     } catch (error) {
       console.error('Error fetching game state:', error);
@@ -155,12 +181,146 @@ export default function GamePage() {
     }
   };
 
-  if (loading || !gameState) {
+  if (loading || (!gameState && !waitingState)) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
           <p className="mt-4 text-gray-400">Loading game...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show waiting state when tournament exists but game hasn't started
+  if (waitingState && !gameState) {
+    return (
+      <div className="min-h-screen bg-gray-900 p-4">
+        {/* Header */}
+        <div className="max-w-6xl mx-auto mb-4">
+          <div className="bg-gray-800 rounded-lg p-4 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold">{waitingState.tournament.name}</h2>
+              <p className="text-sm text-gray-400">Waiting for players...</p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-green-400">
+                {waitingState.tournament.players.length}/{waitingState.tournament.maxPlayers}
+              </p>
+              <p className="text-sm text-gray-400">Players</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Poker Table - Waiting State */}
+        <div className="max-w-6xl mx-auto poker-table-container">
+          <div className="relative poker-table rounded-full aspect-[16/10] border-8 border-amber-900 shadow-2xl p-8">
+            {/* Waiting Message */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+              <div className="bg-black/40 backdrop-blur-sm rounded-xl p-8 border border-white/20">
+                <h3 className="text-3xl font-bold text-yellow-400 mb-4">Waiting for Players</h3>
+                <p className="text-xl text-gray-300 mb-4">
+                  {waitingState.availableSeats} more player{waitingState.availableSeats !== 1 ? 's' : ''} needed
+                </p>
+                <div className="text-lg text-purple-400">
+                  {waitingState.playerSeat !== -1 ? (
+                    `You're seated at position ${waitingState.playerSeat + 1}`
+                  ) : (
+                    'You\'re waiting to be seated...'
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Player Seats - Show occupied and available */}
+            {Array.from({ length: 6 }, (_, index) => {
+              const isOccupied = waitingState.tournament.players.some((player, playerIndex) =>
+                index === waitingState.playerSeat || playerIndex === index
+              );
+              const isCurrentPlayer = index === waitingState.playerSeat;
+
+              const positions = [
+                'top-6 left-1/2 -translate-x-1/2',
+                'top-1/4 right-8',
+                'bottom-1/4 right-8',
+                'bottom-6 left-1/2 -translate-x-1/2',
+                'bottom-1/4 left-8',
+                'top-1/4 left-8',
+              ];
+
+              return (
+                <div
+                  key={index}
+                  className={`absolute ${positions[index]} transform z-10`}
+                >
+                  <div className={`player-seat bg-gray-900 rounded-xl p-4 min-w-[160px] border-2 backdrop-blur-sm ${
+                    isCurrentPlayer ? 'current-player border-purple-500' :
+                    isOccupied ? 'border-green-500' : 'border-gray-600 opacity-50'
+                  }`}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="player-avatar">
+                        {isOccupied ? (isCurrentPlayer ? 'YOU' : '👤') : '⭕'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-white">
+                          {isOccupied ?
+                            (isCurrentPlayer ? 'You' : `Player ${index + 1}`) :
+                            `Seat ${index + 1}`
+                          }
+                        </div>
+                        {isOccupied && (
+                          <div className="text-xs text-gray-400">
+                            Joined
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {isOccupied && (
+                      <div className="text-xs text-green-400 font-semibold">
+                        ✓ Seated
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Waiting Actions */}
+        <div className="max-w-4xl mx-auto mt-8">
+          <div className="bg-gray-800 rounded-lg p-6 text-center">
+            <h3 className="text-xl font-bold mb-4">Tournament Status</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-400">
+                  {waitingState.tournament.buyIn} SOL
+                </div>
+                <div className="text-sm text-gray-400">Buy-in</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-400">
+                  {waitingState.tournament.maxPlayers}
+                </div>
+                <div className="text-sm text-gray-400">Max Players</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-400">
+                  {waitingState.availableSeats}
+                </div>
+                <div className="text-sm text-gray-400">Available</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-400">
+                  {waitingState.tournament.players.length}
+                </div>
+                <div className="text-sm text-gray-400">Joined</div>
+              </div>
+            </div>
+            <p className="text-gray-400">
+              The game will start automatically when all {waitingState.tournament.maxPlayers} players have joined.
+            </p>
+          </div>
         </div>
       </div>
     );

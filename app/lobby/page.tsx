@@ -128,14 +128,9 @@ export default function LobbyPage() {
       
       if (response.ok) {
         const data = await response.json();
-        
-        if (data.tournamentStarted) {
-          // Redirect to game
-          router.push(`/game/${tournament.id}`);
-        } else {
-          alert(`Joined tournament! ${data.playersNeeded} more players needed.`);
-          fetchTournaments();
-        }
+
+        // Always redirect to game page - it will show waiting state if game hasn't started
+        router.push(`/game/${tournament.id}`);
       } else {
         const error = await response.json();
         alert(`Failed to join tournament: ${error.error}`);
