@@ -130,65 +130,24 @@ export default function GamePage() {
       const token = localStorage.getItem('poker_token');
       if (!token) return;
 
-      if (DEMO_MODE) {
-        // Demo mode: Use API route
-        const response = await fetch(`/api/game/${tournamentId}/action`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ action, amount }),
-        });
+      // Process game action (demo mode for now)
+      console.log('🎮 Processing game action:', action);
 
-        if (response.ok) {
-          const data = await response.json();
-          setGameState(data.gameState);
-        } else {
-          const error = await response.json();
-          alert(error.error);
-        }
+      const response = await fetch(`/api/game/${tournamentId}/action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action, amount }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGameState(data.gameState);
       } else {
-        // Production mode: Create real Solana transaction
-        if (!publicKey || !sendTransaction) {
-          alert('Wallet not connected properly');
-          return;
-        }
-
-        // TODO: Implement real Solana program integration
-        // const { pokerProgram } = await import('@/lib/solana/poker-program');
-        // const { PublicKey, Transaction, TransactionInstruction } = await import('@/solana/web3.js');
-
-        try {
-          // For now, we'll create a simple transaction
-          // In a real implementation, you'd need more complex logic based on the action type
-          // const playerWallet = new PublicKey(publicKey.toBase58());
-
-          // Create a simple transaction (this is a placeholder - you'd need actual program integration)
-          // const transaction = new Transaction();
-
-          // For demo purposes, we'll just use the API route for game state updates
-          // In production, you'd integrate with the actual Solana program
-          const response = await fetch(`/api/game/${tournamentId}/action`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ action, amount }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setGameState(data.gameState);
-          } else {
-            const error = await response.json();
-            alert(error.error);
-          }
-        } catch (error) {
-          console.error('❌ Solana transaction failed:', error);
-          alert('Failed to process action. Please try again.');
-        }
+        const error = await response.json();
+        alert(error.error);
       }
     } catch (error) {
       console.error('Error processing action:', error);

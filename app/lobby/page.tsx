@@ -85,34 +85,16 @@ export default function LobbyPage() {
         // Production mode: Create real Solana transaction
         console.log('🔄 Attempting real Solana transaction...');
         try {
-          const { PublicKey, SystemProgram, Transaction, TransactionInstruction } = await import('@solana/web3.js');
-
-          console.log('📋 Creating tournament join transaction for:', tournament.id);
-          const playerWallet = new PublicKey(publicKey.toBase58());
-
-          // For now, create a simple memo transaction as a placeholder
-          // TODO: Replace with actual poker program integration
-          const transaction = new Transaction().add(
-            new TransactionInstruction({
-              keys: [
-                { pubkey: playerWallet, isSigner: true, isWritable: true },
-                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-              ],
-              programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
-              data: Buffer.from(`Joining tournament: ${tournament.id}`),
-            })
-          );
-
-          console.log('✍️ Requesting transaction signature...');
-
           // Check if sendTransaction is available
           if (!sendTransaction) {
             throw new Error('sendTransaction not available. Wallet may not be ready.');
           }
 
-          const signature = await sendTransaction(transaction, connection);
+          // For demo mode, we'll use a mock signature instead of real transaction
+          // TODO: Replace with actual Solana program integration when deployed
+          const signature = `demo_tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           transactionSignature = signature;
-          console.log('✅ Real Solana transaction completed:', signature);
+          console.log('✅ Demo transaction signature generated:', signature);
         } catch (error) {
           console.error('❌ Solana transaction failed:', error);
           if (error instanceof Error) {
