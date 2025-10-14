@@ -11,6 +11,12 @@ console.log('🎮 Demo mode enabled:', DEMO_MODE);
 console.log('🔍 DEMO_MODE type:', typeof DEMO_MODE);
 console.log('🔍 DEMO_MODE value:', DEMO_MODE);
 
+interface TournamentPlayer {
+  walletAddress: string;
+  userId?: string;
+  username?: string;
+}
+
 interface Tournament {
   id: string;
   name: string;
@@ -18,7 +24,7 @@ interface Tournament {
   rakePercentage: number | { toString: () => string };
   status: string;
   maxPlayers: number;
-  players: unknown[];
+  players: TournamentPlayer[];
   createdAt: string;
 }
 
