@@ -53,7 +53,7 @@ export default function AdminPage() {
   }, [connected, router]);
 
   const authenticateForAdmin = async () => {
-    if (!publicKey) {
+    if (!publicKey || !signMessage) {
       alert('Please connect your wallet first');
       return;
     }
