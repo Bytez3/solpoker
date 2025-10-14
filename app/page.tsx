@@ -218,6 +218,143 @@ export default function Home() {
             </div>
           </div>
 
+          {/* How to Play Section */}
+          <div className="mt-20 pt-16 border-t border-gray-800/50 animate-fade-in delay-1000">
+            <div className="text-center mb-12">
+              <h3 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-4">
+                How to Play Solana Poker
+              </h3>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Master the art of decentralized Texas Hold&apos;em in just a few simple steps
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto mb-16">
+              <div className="text-center group">
+                <div className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-2xl p-8 border border-purple-500/20 group-hover:border-purple-500/40 transition-all duration-300">
+                  <div className="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">🎰</div>
+                  <h4 className="text-xl font-bold text-purple-400 mb-4">1. Join Tournament</h4>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    Connect your Phantom wallet and pay the 0.1 SOL buy-in to enter a 6-player tournament
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-center group">
+                <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 rounded-2xl p-8 border border-blue-500/20 group-hover:border-blue-500/40 transition-all duration-300">
+                  <div className="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">👥</div>
+                  <h4 className="text-xl font-bold text-blue-400 mb-4">2. Wait for Players</h4>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    See your seat position and watch as other players join. Tournament starts automatically when full
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-center group">
+                <div className="bg-gradient-to-br from-green-600/20 to-green-800/20 rounded-2xl p-8 border border-green-500/20 group-hover:border-green-500/40 transition-all duration-300">
+                  <div className="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">🃏</div>
+                  <h4 className="text-xl font-bold text-green-400 mb-4">3. Play Poker</h4>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    Receive your hole cards and take strategic betting actions: Fold, Check, Call, Raise, or All-in
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-center group">
+                <div className="bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 rounded-2xl p-8 border border-yellow-500/20 group-hover:border-yellow-500/40 transition-all duration-300">
+                  <div className="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">🏆</div>
+                  <h4 className="text-xl font-bold text-yellow-400 mb-4">4. Win Prizes</h4>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    Best hand wins the pot! Receive real SOL directly to your wallet with instant payouts
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Game Rules Section */}
+            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-3xl p-12 border border-gray-700/50 backdrop-blur-sm">
+              <h3 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-8">
+                Poker Hand Rankings
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4 p-4 bg-purple-900/20 rounded-lg border border-purple-500/20">
+                    <span className="text-2xl">👑</span>
+                    <div>
+                      <div className="font-bold text-purple-400">Royal Flush</div>
+                      <div className="text-sm text-gray-400">A-K-Q-J-10 same suit</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-blue-900/20 rounded-lg border border-blue-500/20">
+                    <span className="text-2xl">🎯</span>
+                    <div>
+                      <div className="font-bold text-blue-400">Straight Flush</div>
+                      <div className="text-sm text-gray-400">5 cards same suit in sequence</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-green-900/20 rounded-lg border border-green-500/20">
+                    <span className="text-2xl">💪</span>
+                    <div>
+                      <div className="font-bold text-green-400">Four of a Kind</div>
+                      <div className="text-sm text-gray-400">4 cards of same rank</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/20">
+                    <span className="text-2xl">🏠</span>
+                    <div>
+                      <div className="font-bold text-yellow-400">Full House</div>
+                      <div className="text-sm text-gray-400">3 of a kind + pair</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-pink-900/20 rounded-lg border border-pink-500/20">
+                    <span className="text-2xl">🎨</span>
+                    <div>
+                      <div className="font-bold text-pink-400">Flush</div>
+                      <div className="text-sm text-gray-400">5 cards same suit</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4 p-4 bg-cyan-900/20 rounded-lg border border-cyan-500/20">
+                    <span className="text-2xl">📏</span>
+                    <div>
+                      <div className="font-bold text-cyan-400">Straight</div>
+                      <div className="text-sm text-gray-400">5 cards in sequence</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/20">
+                    <span className="text-2xl">🔺</span>
+                    <div>
+                      <div className="font-bold text-indigo-400">Three of a Kind</div>
+                      <div className="text-sm text-gray-400">3 cards of same rank</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-orange-900/20 rounded-lg border border-orange-500/20">
+                    <span className="text-2xl">⚖️</span>
+                    <div>
+                      <div className="font-bold text-orange-400">Two Pair</div>
+                      <div className="text-sm text-gray-400">2 pairs of different ranks</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-red-900/20 rounded-lg border border-red-500/20">
+                    <span className="text-2xl">👆</span>
+                    <div>
+                      <div className="font-bold text-red-400">One Pair</div>
+                      <div className="text-sm text-gray-400">2 cards of same rank</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-gray-900/50 rounded-lg border border-gray-600/50">
+                    <span className="text-2xl">🎴</span>
+                    <div>
+                      <div className="font-bold text-gray-400">High Card</div>
+                      <div className="text-sm text-gray-500">Highest card wins</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Enhanced Stats Section */}
           <div className="mt-20 pt-16 border-t border-gray-800/50 animate-fade-in delay-1200">
             <div className="text-center mb-12">
