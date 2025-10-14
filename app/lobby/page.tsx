@@ -7,6 +7,9 @@ import { useRouter } from 'next/navigation';
 
 // Temporarily enable demo mode for testing until Solana program is deployed
 const DEMO_MODE = true;
+console.log('🎮 Demo mode enabled:', DEMO_MODE);
+console.log('🔍 DEMO_MODE type:', typeof DEMO_MODE);
+console.log('🔍 DEMO_MODE value:', DEMO_MODE);
 
 interface Tournament {
   id: string;
@@ -67,20 +70,35 @@ export default function LobbyPage() {
         console.log('🎮 Demo mode: Using mock transaction signature:', transactionSignature);
       } else {
         // Production mode: Create real Solana transaction
-        const { pokerProgram } = await import('@/lib/solana/poker-program');
-        const { PublicKey } = await import('@solana/web3.js');
-
+        console.log('🔄 Attempting real Solana transaction...');
         try {
-          const playerWallet = new PublicKey(publicKey.toBase58());
-          const transaction = await pokerProgram.joinTournament(playerWallet, tournament.id);
+          const { pokerProgram } = await import('@/lib/solana/poker-program');
+          const { PublicKey, SystemProgram, Transaction, TransactionInstruction } = await import('@solana/web3.js');
 
-          // Request user to sign and send transaction
+          console.log('📋 Creating tournament join transaction for:', tournament.id);
+          const playerWallet = new PublicKey(publicKey.toBase58());
+
+          // For now, create a simple memo transaction as a placeholder
+          // TODO: Replace with actual poker program integration
+          const transaction = new Transaction().add(
+            new TransactionInstruction({
+              keys: [
+                { pubkey: playerWallet, isSigner: true, isWritable: true },
+                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+              ],
+              programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+              data: Buffer.from(`Joining tournament: ${tournament.id}`),
+            })
+          );
+
+          console.log('✍️ Requesting transaction signature...');
           const signature = await sendTransaction(transaction, connection);
 
           transactionSignature = signature;
           console.log('✅ Real Solana transaction completed:', signature);
         } catch (error) {
           console.error('❌ Solana transaction failed:', error);
+          console.error('Error details:', error.message, error.stack);
           alert('Failed to join tournament. Please try again.');
           setJoining(null);
           return;
