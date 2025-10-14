@@ -73,10 +73,11 @@ export async function POST(
     // Check if player already joined
     const existingPlayer = tournament.players.find(p => p.userId === user.id);
     if (existingPlayer) {
-      return NextResponse.json(
-        { error: 'Already joined this tournament' },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        tournamentPlayer: existingPlayer,
+        alreadyJoined: true,
+        message: 'Already joined this tournament',
+      });
     }
     
     // Add player to tournament

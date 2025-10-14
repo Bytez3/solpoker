@@ -127,11 +127,26 @@ export default function LobbyPage() {
       });
       
       if (response.ok) {
-        // Always redirect to game page - it will show waiting state if game hasn't started
-        router.push(`/game/${tournament.id}`);
+        const data = await response.json();
+
+        if (data.alreadyJoined) {
+          // User is already joined, redirect to game page to see the table
+          console.log('✅ Already joined tournament, redirecting to game page');
+          router.push(`/game/${tournament.id}`);
+        } else {
+          // Successfully joined, redirect to game page
+          console.log('✅ Successfully joined tournament, redirecting to game page');
+          router.push(`/game/${tournament.id}`);
+        }
       } else {
         const error = await response.json();
-        alert(`Failed to join tournament: ${error.error}`);
+        if (error.error === 'Already joined this tournament') {
+          // Handle the case where API returns already joined as an error
+          console.log('✅ Already joined tournament (legacy response), redirecting to game page');
+          router.push(`/game/${tournament.id}`);
+        } else {
+          alert(`Failed to join tournament: ${error.error}`);
+        }
       }
     } catch (error) {
       console.error('Error joining tournament:', error);
@@ -198,6 +213,9 @@ export default function LobbyPage() {
               const playersJoined = tournament.players.length;
               const playersNeeded = tournament.maxPlayers - playersJoined;
 
+              // Check if current user is already joined
+              const isCurrentUserJoined = tournament.players.some(p => p.walletAddress === publicKey?.toBase58());
+
               return (
                 <div
                   key={tournament.id}
@@ -242,16 +260,34 @@ export default function LobbyPage() {
                       ></div>
                     </div>
                     <p className="text-xs text-gray-400 mt-1">
-                      {playersNeeded > 0 ? `${playersNeeded} more player${playersNeeded > 1 ? 's' : ''} needed` : 'Full!'}
+                      {isCurrentUserJoined
+                        ? 'You\'re in! Click "View Table" to see your seat'
+                        : playersNeeded > 0
+                        ? `${playersNeeded} more player${playersNeeded > 1 ? 's' : ''} needed`
+                        : 'Full!'
+                      }
                     </p>
                   </div>
 
                   <button
                     onClick={() => handleJoinTournament(tournament)}
-                    disabled={joining === tournament.id || playersJoined >= tournament.maxPlayers}
-                    className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                    disabled={joining === tournament.id}
+                    className={`w-full font-semibold py-3 px-4 rounded-lg transition-colors ${
+                      isCurrentUserJoined
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : playersJoined >= tournament.maxPlayers && !isCurrentUserJoined
+                        ? 'bg-gray-600 cursor-not-allowed text-gray-400'
+                        : 'bg-purple-600 hover:bg-purple-700 text-white'
+                    }`}
                   >
-                    {joining === tournament.id ? 'Joining...' : 'Join Tournament'}
+                    {joining === tournament.id
+                      ? 'Processing...'
+                      : isCurrentUserJoined
+                      ? 'View Table'
+                      : playersJoined >= tournament.maxPlayers
+                      ? 'Tournament Full'
+                      : 'Join Tournament'
+                    }
                   </button>
                 </div>
               );
