@@ -5,7 +5,8 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+// Temporarily enable demo mode for testing until Solana program is deployed
+const DEMO_MODE = true;
 
 interface Tournament {
   id: string;
