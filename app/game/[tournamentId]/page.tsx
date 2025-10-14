@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 
-// Temporarily enable demo mode for testing until Solana program is deployed
-const DEMO_MODE = true;
+// Demo mode is handled by the API and components
 
 interface Card {
   rank: string;
@@ -102,7 +101,7 @@ function getPlayerInitials(username?: string, walletAddress?: string): string {
 export default function GamePage() {
   const params = useParams();
   const router = useRouter();
-  const { connected, publicKey, sendTransaction } = useWallet();
+  const { connected, publicKey } = useWallet();
   // const { connection } = useConnection(); // Not used in demo mode
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [waitingState, setWaitingState] = useState<TournamentWaitingState | null>(null);
@@ -326,9 +325,9 @@ export default function GamePage() {
     );
   }
 
-  const currentPlayer = gameState.players.find(p => p.walletAddress === publicKey?.toBase58());
-  const isMyTurn = currentPlayer && gameState.currentPlayerSeat === currentPlayer.seatPosition;
-  const callAmount = isMyTurn ? gameState.currentBet - (currentPlayer?.bet || 0) : 0;
+  const currentPlayer = gameState?.players.find(p => p.walletAddress === publicKey?.toBase58());
+  const isMyTurn = currentPlayer && gameState?.currentPlayerSeat === currentPlayer.seatPosition;
+  const callAmount = isMyTurn && gameState ? gameState.currentBet - (currentPlayer?.bet || 0) : 0;
 
   return (
     <div className="min-h-screen bg-gray-900 p-4">

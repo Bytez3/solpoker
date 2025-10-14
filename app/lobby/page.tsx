@@ -127,8 +127,6 @@ export default function LobbyPage() {
       });
       
       if (response.ok) {
-        const data = await response.json();
-
         // Always redirect to game page - it will show waiting state if game hasn't started
         router.push(`/game/${tournament.id}`);
       } else {
