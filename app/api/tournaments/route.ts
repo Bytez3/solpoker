@@ -13,7 +13,17 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     
     type TournamentStatus = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-    const where = status ? { status: status as TournamentStatus } : {};
+    
+    // Handle multiple statuses (e.g., "WAITING,IN_PROGRESS")
+    let where = {};
+    if (status) {
+      if (status.includes(',')) {
+        const statuses = status.split(',').map(s => s.trim()) as TournamentStatus[];
+        where = { status: { in: statuses } };
+      } else {
+        where = { status: status as TournamentStatus };
+      }
+    }
     
     const tournaments = await prisma.tournament.findMany({
       where,

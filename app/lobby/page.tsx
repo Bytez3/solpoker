@@ -46,32 +46,20 @@ export default function LobbyPage() {
     }
 
     fetchTournaments();
-    const interval = setInterval(fetchTournaments, 5000); // Refresh every 5 seconds
+    const interval = setInterval(fetchTournaments, 10000); // Refresh every 10 seconds (reduced from 5s)
 
     return () => clearInterval(interval);
   }, [connected, router]);
 
   const fetchTournaments = async () => {
     try {
-      // Fetch tournaments with different statuses
-      const [waitingResponse, inProgressResponse] = await Promise.all([
-        fetch('/api/tournaments?status=WAITING'),
-        fetch('/api/tournaments?status=IN_PROGRESS')
-      ]);
+      // Single API call to fetch all active tournaments (WAITING + IN_PROGRESS)
+      const response = await fetch('/api/tournaments?status=WAITING,IN_PROGRESS');
       
-      const tournaments = [];
-      
-      if (waitingResponse.ok) {
-        const waitingData = await waitingResponse.json();
-        tournaments.push(...waitingData.tournaments);
+      if (response.ok) {
+        const data = await response.json();
+        setTournaments(data.tournaments);
       }
-      
-      if (inProgressResponse.ok) {
-        const inProgressData = await inProgressResponse.json();
-        tournaments.push(...inProgressData.tournaments);
-      }
-      
-      setTournaments(tournaments);
     } catch (error) {
       console.error('Error fetching tournaments:', error);
     } finally {
