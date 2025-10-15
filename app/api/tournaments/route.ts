@@ -88,6 +88,9 @@ export async function POST(request: NextRequest) {
       tournamentType = 'sit_n_go',
       privacy = 'public',
       blindStructure = 'progressive',
+      tokenType = 'SOL',
+      tokenMint = null,
+      tokenDecimals = 9,
       escrowAddress 
     } = body;
     
@@ -112,6 +115,30 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Validate token type
+    if (tokenType !== 'SOL' && tokenType !== 'SPL') {
+      return NextResponse.json(
+        { error: 'Token type must be SOL or SPL' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate SPL token requirements
+    if (tokenType === 'SPL') {
+      if (!tokenMint) {
+        return NextResponse.json(
+          { error: 'Token mint address required for SPL tokens' },
+          { status: 400 }
+        );
+      }
+      if (!tokenDecimals || tokenDecimals < 0 || tokenDecimals > 9) {
+        return NextResponse.json(
+          { error: 'Token decimals must be between 0 and 9' },
+          { status: 400 }
+        );
+      }
+    }
+    
     const tournament = await prisma.tournament.create({
       data: {
         name,
@@ -121,6 +148,9 @@ export async function POST(request: NextRequest) {
         tournamentType,
         privacy,
         blindStructure,
+        tokenType,
+        tokenMint,
+        tokenDecimals,
         escrowAddress,
         createdById: user.id,
         status: 'WAITING',

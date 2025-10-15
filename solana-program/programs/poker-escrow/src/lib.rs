@@ -10,15 +10,27 @@ pub mod poker_escrow {
     pub fn initialize_admin(
         ctx: Context<InitializeAdmin>,
         default_rake_percentage: u16,
+        creator_rake_percentage: u16,
+        admin_rake_percentage: u16,
     ) -> Result<()> {
+        require!(creator_rake_percentage + admin_rake_percentage == 100, ErrorCode::InvalidRakeSplit);
+        require!(creator_rake_percentage <= 100, ErrorCode::InvalidRakePercentage);
+        require!(admin_rake_percentage <= 100, ErrorCode::InvalidRakePercentage);
+        
         let admin_config = &mut ctx.accounts.admin_config;
         admin_config.admin = ctx.accounts.admin.key();
         admin_config.default_rake_percentage = default_rake_percentage;
+        admin_config.creator_rake_percentage = creator_rake_percentage;
+        admin_config.admin_rake_percentage = admin_rake_percentage;
         admin_config.total_rake_collected = 0;
+        admin_config.total_creator_rake_paid = 0;
+        admin_config.total_admin_rake_collected = 0;
         admin_config.bump = ctx.bumps.admin_config;
         
         msg!("Admin initialized: {}", admin_config.admin);
         msg!("Default rake percentage: {}%", default_rake_percentage);
+        msg!("Creator rake percentage: {}%", creator_rake_percentage);
+        msg!("Admin rake percentage: {}%", admin_rake_percentage);
         
         Ok(())
     }
@@ -45,6 +57,8 @@ pub mod poker_escrow {
         tournament.rake_percentage = rake_percentage;
         tournament.total_pot = 0;
         tournament.rake_amount = 0;
+        tournament.creator_rake_amount = 0;
+        tournament.admin_rake_amount = 0;
         tournament.players_joined = 0;
         tournament.max_players = max_players;
         tournament.tournament_type = tournament_type as u8;
@@ -119,12 +133,19 @@ pub mod poker_escrow {
             ],
         )?;
         
-        // Calculate rake
+        // Calculate rake and split it
         let rake = (tournament.buy_in * tournament.rake_percentage as u64) / 10000;
         let net_buy_in = tournament.buy_in - rake;
         
+        // Get admin config to determine rake split
+        let admin_config = &ctx.accounts.admin_config;
+        let creator_rake = (rake * admin_config.creator_rake_percentage as u64) / 100;
+        let admin_rake = (rake * admin_config.admin_rake_percentage as u64) / 100;
+        
         tournament.total_pot += net_buy_in;
         tournament.rake_amount += rake;
+        tournament.creator_rake_amount += creator_rake;
+        tournament.admin_rake_amount += admin_rake;
         tournament.players_joined += 1;
         
         // Store player address in dynamic vector
@@ -182,7 +203,7 @@ pub mod poker_escrow {
         Ok(())
     }
 
-    /// Creator withdraws collected rake (Enhanced for any tournament creator)
+    /// Creator withdraws their portion of collected rake
     pub fn withdraw_rake(ctx: Context<WithdrawRake>) -> Result<()> {
         let tournament = &mut ctx.accounts.tournament_escrow;
         let admin_config = &mut ctx.accounts.admin_config;
@@ -191,18 +212,43 @@ pub mod poker_escrow {
             ctx.accounts.creator.key() == tournament.creator,
             ErrorCode::Unauthorized
         );
-        require!(tournament.rake_amount > 0, ErrorCode::NoRakeToWithdraw);
+        require!(tournament.creator_rake_amount > 0, ErrorCode::NoRakeToWithdraw);
         
-        let rake_amount = tournament.rake_amount;
+        let creator_rake_amount = tournament.creator_rake_amount;
         
-        // Transfer rake from escrow to creator
-        **tournament.to_account_info().try_borrow_mut_lamports()? -= rake_amount;
-        **ctx.accounts.creator.try_borrow_mut_lamports()? += rake_amount;
+        // Transfer creator's rake portion from escrow to creator
+        **tournament.to_account_info().try_borrow_mut_lamports()? -= creator_rake_amount;
+        **ctx.accounts.creator.try_borrow_mut_lamports()? += creator_rake_amount;
         
-        tournament.rake_amount = 0;
-        admin_config.total_rake_collected += rake_amount;
+        tournament.creator_rake_amount = 0;
+        admin_config.total_creator_rake_paid += creator_rake_amount;
         
-        msg!("Creator withdrew {} lamports in rake", rake_amount);
+        msg!("Creator withdrew {} lamports in rake (their portion)", creator_rake_amount);
+        
+        Ok(())
+    }
+
+    /// Admin withdraws their portion of collected rake
+    pub fn withdraw_admin_rake(ctx: Context<WithdrawAdminRake>) -> Result<()> {
+        let tournament = &mut ctx.accounts.tournament_escrow;
+        let admin_config = &mut ctx.accounts.admin_config;
+        
+        require!(
+            ctx.accounts.admin.key() == admin_config.admin,
+            ErrorCode::Unauthorized
+        );
+        require!(tournament.admin_rake_amount > 0, ErrorCode::NoRakeToWithdraw);
+        
+        let admin_rake_amount = tournament.admin_rake_amount;
+        
+        // Transfer admin's rake portion from escrow to admin
+        **tournament.to_account_info().try_borrow_mut_lamports()? -= admin_rake_amount;
+        **ctx.accounts.admin.try_borrow_mut_lamports()? += admin_rake_amount;
+        
+        tournament.admin_rake_amount = 0;
+        admin_config.total_admin_rake_collected += admin_rake_amount;
+        
+        msg!("Admin withdrew {} lamports in rake (their portion)", admin_rake_amount);
         
         Ok(())
     }
@@ -318,6 +364,12 @@ pub struct JoinTournament<'info> {
     #[account(mut)]
     pub tournament_escrow: Account<'info, TournamentEscrow>,
     
+    #[account(
+        seeds = [b"admin_config"],
+        bump = admin_config.bump
+    )]
+    pub admin_config: Account<'info, AdminConfig>,
+    
     pub system_program: Program<'info, System>,
 }
 
@@ -340,6 +392,24 @@ pub struct DistributePrizes<'info> {
 pub struct WithdrawRake<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
+    
+    #[account(mut)]
+    pub tournament_escrow: Account<'info, TournamentEscrow>,
+    
+    #[account(
+        mut,
+        seeds = [b"admin_config"],
+        bump = admin_config.bump
+    )]
+    pub admin_config: Account<'info, AdminConfig>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawAdminRake<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
     
     #[account(mut)]
     pub tournament_escrow: Account<'info, TournamentEscrow>,
@@ -381,7 +451,11 @@ pub struct LeaveTournament<'info> {
 pub struct AdminConfig {
     pub admin: Pubkey,
     pub default_rake_percentage: u16,
+    pub creator_rake_percentage: u16, // % of rake that goes to tournament creator (e.g., 70%)
+    pub admin_rake_percentage: u16,   // % of rake that goes to admin (e.g., 30%)
     pub total_rake_collected: u64,
+    pub total_creator_rake_paid: u64,
+    pub total_admin_rake_collected: u64,
     pub bump: u8,
 }
 
@@ -393,6 +467,8 @@ pub struct TournamentEscrow {
     pub rake_percentage: u16,
     pub total_pot: u64,
     pub rake_amount: u64,
+    pub creator_rake_amount: u64,    // Amount of rake that goes to creator
+    pub admin_rake_amount: u64,      // Amount of rake that goes to admin
     pub players_joined: u8,
     pub max_players: u8,
     pub tournament_type: u8,
@@ -417,6 +493,8 @@ impl TournamentEscrow {
         2 + // rake_percentage
         8 + // total_pot
         8 + // rake_amount
+        8 + // creator_rake_amount
+        8 + // admin_rake_amount
         1 + // players_joined
         1 + // max_players
         1 + // tournament_type
@@ -516,5 +594,9 @@ pub enum ErrorCode {
     InvalidWinnerCount,
     #[msg("Prize amount exceeds available pot")]
     PrizeExceedsPot,
+    #[msg("Invalid rake split: Creator and admin percentages must sum to 100%")]
+    InvalidRakeSplit,
+    #[msg("Invalid rake percentage: Must be between 0 and 100%")]
+    InvalidRakePercentage,
 }
 

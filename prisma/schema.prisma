@@ -37,7 +37,12 @@ model Tournament {
   tournamentType  String            @default("sit_n_go") @map("tournament_type")
   privacy         String            @default("public")
   blindStructure  String            @default("progressive") @map("blind_structure")
+  tokenType       String            @default("SOL") @map("token_type")
+  tokenMint       String?           @map("token_mint") // SPL token mint address
+  tokenDecimals   Int?              @default(9) @map("token_decimals")
   escrowAddress   String?           @map("escrow_address")
+  creatorRakeCollected Decimal     @default(0) @map("creator_rake_collected") @db.Decimal(20, 9)
+  creatorRakeWithdrawn  Decimal     @default(0) @map("creator_rake_withdrawn") @db.Decimal(20, 9)
   createdById     String            @map("created_by_id")
   createdBy       User              @relation("TournamentCreator", fields: [createdById], references: [id])
   startedAt       DateTime?         @map("started_at")
@@ -156,11 +161,16 @@ model Hand {
 }
 
 model AdminConfig {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  value     String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(cuid())
+  key                   String   @unique
+  value                 String   @db.Text
+  creatorRakePercentage Decimal  @default(70) @map("creator_rake_percentage") @db.Decimal(5, 2) // % of rake that goes to tournament creator
+  adminRakePercentage   Decimal  @default(30) @map("admin_rake_percentage") @db.Decimal(5, 2)   // % of rake that goes to admin
+  totalRakeCollected    Decimal  @default(0) @map("total_rake_collected") @db.Decimal(20, 9)
+  totalCreatorRakePaid  Decimal  @default(0) @map("total_creator_rake_paid") @db.Decimal(20, 9)
+  totalAdminRakeCollected Decimal @default(0) @map("total_admin_rake_collected") @db.Decimal(20, 9)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
   
   @@map("admin_config")
 }

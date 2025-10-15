@@ -22,8 +22,18 @@ export class TournamentManager {
   private gameStates: Map<string, GameState> = new Map();
   
   /**
-   * Check if tournament is ready to start (based on max players)
+   * Update tournament rake when players join
    */
+  async updateTournamentRake(tournamentId: string, rakeAmount: number): Promise<void> {
+    await prisma.tournament.update({
+      where: { id: tournamentId },
+      data: {
+        creatorRakeCollected: {
+          increment: rakeAmount,
+        },
+      },
+    });
+  }
   async isTournamentReady(tournamentId: string): Promise<boolean> {
     const tournament = await prisma.tournament.findUnique({
       where: { id: tournamentId },

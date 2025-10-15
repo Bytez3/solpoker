@@ -23,6 +23,9 @@ export default function CreateTournamentPage() {
   const [tournamentType, setTournamentType] = useState('sit_n_go');
   const [privacy, setPrivacy] = useState('public');
   const [blindStructure, setBlindStructure] = useState('progressive');
+  const [tokenType, setTokenType] = useState('SOL');
+  const [tokenMint, setTokenMint] = useState('');
+  const [tokenDecimals, setTokenDecimals] = useState('9');
 
   useEffect(() => {
     if (!connected) {
@@ -120,6 +123,9 @@ export default function CreateTournamentPage() {
           tournamentType,
           privacy,
           blindStructure,
+          tokenType,
+          tokenMint: tokenType === 'SPL' ? tokenMint : null,
+          tokenDecimals: tokenType === 'SPL' ? parseInt(tokenDecimals) : 9,
           escrowAddress: mockEscrowAddress,
         }),
       });
@@ -364,6 +370,95 @@ export default function CreateTournamentPage() {
                   <option value="hyper_turbo">Hyper Turbo</option>
                 </select>
               </div>
+            </div>
+
+            {/* Token Configuration */}
+            <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+              <h3 className="text-lg font-semibold text-purple-400 mb-4">Token Configuration</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Token Type
+                  </label>
+                  <select
+                    value={tokenType}
+                    onChange={(e) => {
+                      setTokenType(e.target.value);
+                      if (e.target.value === 'SOL') {
+                        setTokenMint('');
+                        setTokenDecimals('9');
+                      }
+                    }}
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="SOL">SOL (Native)</option>
+                    <option value="SPL">SPL Token</option>
+                  </select>
+                </div>
+
+                {tokenType === 'SPL' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Token Mint Address
+                      </label>
+                      <input
+                        type="text"
+                        value={tokenMint}
+                        onChange={(e) => setTokenMint(e.target.value)}
+                        placeholder="Enter SPL token mint address"
+                        className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Token Decimals
+                      </label>
+                      <select
+                        value={tokenDecimals}
+                        onChange={(e) => setTokenDecimals(e.target.value)}
+                        className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                      >
+                        <option value="0">0 decimals</option>
+                        <option value="1">1 decimal</option>
+                        <option value="2">2 decimals</option>
+                        <option value="3">3 decimals</option>
+                        <option value="4">4 decimals</option>
+                        <option value="5">5 decimals</option>
+                        <option value="6">6 decimals</option>
+                        <option value="7">7 decimals</option>
+                        <option value="8">8 decimals</option>
+                        <option value="9">9 decimals</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {tokenType === 'SPL' && (
+                <div className="mt-4 p-4 bg-blue-900/20 rounded-lg border border-blue-500/20">
+                  <h4 className="text-sm font-semibold text-blue-400 mb-2">Popular SPL Tokens:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">USDC:</span>
+                      <span className="text-blue-400 font-mono">EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">USDT:</span>
+                      <span className="text-blue-400 font-mono">Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">RAY:</span>
+                      <span className="text-blue-400 font-mono">4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">SRM:</span>
+                      <span className="text-blue-400 font-mono">SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Tournament Preview */}
