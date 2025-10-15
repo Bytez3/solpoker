@@ -121,69 +121,49 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
-            {/* Main Title */}
+            {/* Main Title - WSOP Style */}
             <div className="mb-8">
               <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 mb-4">
-                Solana Poker League
+                Official Solana Poker Game
           </h1>
-              <div className="h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full w-32 mx-auto mb-6"></div>
-              <p className="text-2xl md:text-3xl font-light text-slate-300 mb-4">
-                The Ultimate Decentralized Poker Experience
+              <p className="text-2xl md:text-3xl font-light text-slate-300 mb-8">
+                Free, Trusted, and Recognized Worldwide
               </p>
-              <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-                Join the world&apos;s most advanced blockchain poker platform. Compete in tournaments, climb the leaderboard, and win real SOL prizes.
+              <p className="text-lg text-slate-400 max-w-4xl mx-auto mb-8">
+                Solana Poker is the most recognized name in blockchain poker, trusted by players around the world. 
+                Now you can enjoy the same authentic experience on our website or mobile app.
+              </p>
+              <p className="text-lg text-purple-400 font-semibold">
+                Ready to play like a pro? Join Solana Poker today and start your journey.
           </p>
         </div>
 
-            {/* CTA Section */}
+            {/* CTA Section - WSOP Style */}
             <div className="mb-16">
               {!mounted ? (
                 <div className="h-20 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
-                  <span className="ml-4 text-lg text-slate-400">Loading...</span>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
                 </div>
-              ) : !connected ? (
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-slate-800/50 to-slate-900/50 rounded-2xl p-8 border border-slate-700/50 backdrop-blur-sm max-w-md mx-auto">
-                    <div className="text-6xl mb-4">🎰</div>
-                    <h3 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                      Ready to Compete?
-                    </h3>
-                    <p className="text-slate-400 mb-6">
-                      Connect your wallet to join tournaments and start playing
-                    </p>
-                    <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 !transition-all !duration-300 !shadow-lg !shadow-purple-500/50 hover:!shadow-xl hover:!shadow-purple-500/70 !text-lg !px-8 !py-3 !rounded-xl !font-bold !w-full" />
-                  </div>
+              ) : connected ? (
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                  <button
+                    onClick={authenticateWallet}
+                    disabled={authenticating}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-purple-400 disabled:to-pink-400 text-white font-bold py-6 px-12 rounded-xl text-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl disabled:transform-none disabled:cursor-not-allowed"
+                  >
+                    {authenticating ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        Signing...
+                      </div>
+                    ) : (
+                      'Play Now'
+                    )}
+                  </button>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {authenticating ? (
-                    <div className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 rounded-2xl p-8 border border-green-500/20 backdrop-blur-sm max-w-md mx-auto">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-                        <div>
-                          <h3 className="text-xl font-bold text-green-400 mb-2">Authenticating...</h3>
-                          <p className="text-slate-400">Check your Phantom wallet for the signature request</p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 rounded-2xl p-8 border border-green-500/20 backdrop-blur-sm max-w-md mx-auto">
-                      <div className="text-6xl mb-4">🎯</div>
-                      <h3 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">
-                        Welcome Back!
-                      </h3>
-                      <p className="text-slate-400 mb-6">
-                        Sign in to access tournaments and start competing
-                      </p>
-                      <button
-                        onClick={authenticateWallet}
-                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/70 text-white text-lg px-8 py-3 rounded-xl font-bold w-full"
-                      >
-                        🚀 Sign In to Play
-                      </button>
-                    </div>
-                  )}
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                  <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 !text-white !font-bold !py-6 !px-12 !rounded-xl !text-2xl !transition-all !duration-200 !transform hover:!scale-105 !shadow-2xl" />
                 </div>
               )}
             </div>
@@ -206,6 +186,51 @@ export default function Home() {
                 <div className="text-4xl font-bold text-green-400 mb-2">24/7</div>
                 <div className="text-sm text-slate-500 uppercase tracking-wide">Always Online</div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trusted Section - WSOP Style */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              The #1 Trusted Free Poker Game by Solana
+            </h2>
+            <p className="text-xl text-slate-300 mb-8 max-w-4xl mx-auto">
+              Solana Poker is the most recognized name in blockchain poker, trusted by players around the world. 
+              Now you can enjoy the same authentic experience on our website or mobile app.
+            </p>
+            <p className="text-lg text-slate-400 mb-8 max-w-3xl mx-auto">
+              Play real poker, sharpen your skills, and join a global community - all backed by the blockchain that defines the game.
+            </p>
+            <p className="text-lg text-purple-400 font-semibold">
+              Ready to play like a pro? Join Solana Poker today and start your journey.
+            </p>
+          </div>
+
+          {/* Feature Showcase */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20">
+            <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-xl p-6 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-4xl mb-2">🎯</div>
+              <h3 className="text-white font-semibold">Tournaments</h3>
+              <p className="text-slate-400 text-sm mt-1">Compete in epic tournaments</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl p-6 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300">
+              <div className="text-4xl mb-2">⚡</div>
+              <h3 className="text-white font-semibold">Fast Play</h3>
+              <p className="text-slate-400 text-sm mt-1">Lightning-fast blockchain</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-600/20 to-blue-600/20 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all duration-300">
+              <div className="text-4xl mb-2">🔒</div>
+              <h3 className="text-white font-semibold">Secure</h3>
+              <p className="text-slate-400 text-sm mt-1">Decentralized security</p>
+            </div>
+            <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 rounded-xl p-6 border border-yellow-500/30 hover:border-yellow-400/50 transition-all duration-300">
+              <div className="text-4xl mb-2">🏆</div>
+              <h3 className="text-white font-semibold">Prizes</h3>
+              <p className="text-slate-400 text-sm mt-1">Win real SOL rewards</p>
             </div>
           </div>
         </div>
