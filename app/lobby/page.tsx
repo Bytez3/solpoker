@@ -53,16 +53,35 @@ export default function LobbyPage() {
 
   const fetchTournaments = async () => {
     try {
-      const response = await fetch('/api/tournaments?status=WAITING');
-      if (response.ok) {
-        const data = await response.json();
-        setTournaments(data.tournaments);
+      // Fetch tournaments with different statuses
+      const [waitingResponse, inProgressResponse] = await Promise.all([
+        fetch('/api/tournaments?status=WAITING'),
+        fetch('/api/tournaments?status=IN_PROGRESS')
+      ]);
+      
+      const tournaments = [];
+      
+      if (waitingResponse.ok) {
+        const waitingData = await waitingResponse.json();
+        tournaments.push(...waitingData.tournaments);
       }
+      
+      if (inProgressResponse.ok) {
+        const inProgressData = await inProgressResponse.json();
+        tournaments.push(...inProgressData.tournaments);
+      }
+      
+      setTournaments(tournaments);
     } catch (error) {
       console.error('Error fetching tournaments:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleWatchGame = (tournament: Tournament) => {
+    // Navigate to game page as spectator
+    router.push(`/game/${tournament.id}`);
   };
 
   const handleJoinTournament = async (tournament: Tournament) => {
@@ -281,6 +300,17 @@ export default function LobbyPage() {
                           }`}>
                             {tournament.privacy.toUpperCase()}
                           </span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            tournament.status === 'IN_PROGRESS' ? 'bg-orange-600' :
+                            tournament.status === 'WAITING' ? 'bg-blue-600' :
+                            tournament.status === 'COMPLETED' ? 'bg-gray-600' :
+                            'bg-red-600'
+                          }`}>
+                            {tournament.status === 'IN_PROGRESS' ? 'LIVE' :
+                             tournament.status === 'WAITING' ? 'WAITING' :
+                             tournament.status === 'COMPLETED' ? 'ENDED' :
+                             tournament.status}
+                          </span>
                         </div>
                       </div>
                       
@@ -374,26 +404,50 @@ export default function LobbyPage() {
                     </div>
                   )}
 
-                  <button
-                    onClick={() => handleJoinTournament(tournament)}
-                    disabled={joining === tournament.id}
-                    className={`w-full font-semibold py-3 px-4 rounded-lg transition-colors ${
-                      isCurrentUserJoined
-                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : playersJoined >= tournament.maxPlayers && !isCurrentUserJoined
-                        ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                        : 'bg-purple-600 hover:bg-purple-700 text-white'
-                    }`}
-                  >
-                    {joining === tournament.id
-                      ? 'Processing...'
-                      : isCurrentUserJoined
-                      ? 'View Table'
-                      : playersJoined >= tournament.maxPlayers
-                      ? 'Tournament Full'
-                      : 'Join Tournament'
-                    }
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    {tournament.status === 'IN_PROGRESS' ? (
+                      // Game is in progress - show watch button
+                      <button
+                        onClick={() => handleWatchGame(tournament)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                      >
+                        👁️ Watch Game Live
+                      </button>
+                    ) : (
+                      // Game is waiting - show join/view button
+                      <button
+                        onClick={() => handleJoinTournament(tournament)}
+                        disabled={joining === tournament.id}
+                        className={`w-full font-semibold py-3 px-4 rounded-lg transition-colors ${
+                          isCurrentUserJoined
+                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                            : playersJoined >= tournament.maxPlayers && !isCurrentUserJoined
+                            ? 'bg-gray-600 cursor-not-allowed text-gray-400'
+                            : 'bg-purple-600 hover:bg-purple-700 text-white'
+                        }`}
+                      >
+                        {joining === tournament.id
+                          ? 'Processing...'
+                          : isCurrentUserJoined
+                          ? 'View Table'
+                          : playersJoined >= tournament.maxPlayers
+                          ? 'Tournament Full'
+                          : 'Join Tournament'
+                        }
+                      </button>
+                    )}
+                    
+                    {/* Additional watch button for joined users in waiting tournaments */}
+                    {tournament.status === 'WAITING' && isCurrentUserJoined && (
+                      <button
+                        onClick={() => handleWatchGame(tournament)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                      >
+                        👁️ Watch Table
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

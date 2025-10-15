@@ -243,26 +243,24 @@ export default function GamePage() {
   const tournamentId = params.tournamentId as string;
 
   useEffect(() => {
-    if (!connected) {
-      router.push('/');
-      return;
-    }
-
     fetchGameState();
     const interval = setInterval(fetchGameState, 2000); // Poll every 2 seconds
 
     return () => clearInterval(interval);
-  }, [connected, tournamentId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tournamentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchGameState = async () => {
     try {
       const token = localStorage.getItem('poker_token');
-      if (!token) return;
+      const headers: HeadersInit = {};
+      
+      // Add authorization header if user is authenticated
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
       const response = await fetch(`/api/game/${tournamentId}/state`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers,
       });
 
       if (response.ok) {
@@ -594,6 +592,7 @@ export default function GamePage() {
   const currentPlayer = gameState?.players.find(p => p.walletAddress === publicKey?.toBase58());
   const isMyTurn = currentPlayer && gameState?.currentPlayerSeat === currentPlayer.seatPosition;
   const callAmount = isMyTurn && gameState ? gameState.currentBet - (currentPlayer?.bet || 0) : 0;
+  const isSpectator = !currentPlayer && !waitingState?.tournament.players.some(p => p.user.walletAddress === publicKey?.toString());
 
   return (
     <div className="min-h-screen bg-gray-900 p-4">
@@ -610,6 +609,21 @@ export default function GamePage() {
           </div>
         </div>
       </div>
+
+      {/* Spectator Mode Banner */}
+      {isSpectator && (
+        <div className="max-w-6xl mx-auto mb-4">
+          <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <div className="text-2xl">👁️</div>
+              <div>
+                <h3 className="text-lg font-bold text-blue-400">Spectator Mode</h3>
+                <p className="text-sm text-blue-300">You are watching this game live. Connect your wallet to join future tournaments.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Poker Table */}
       <div className="max-w-6xl mx-auto poker-table-container">
@@ -793,7 +807,8 @@ export default function GamePage() {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {!isSpectator && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Fold Button */}
               <button
                 onClick={() => handleAction('fold')}
