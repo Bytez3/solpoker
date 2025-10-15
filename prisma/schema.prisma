@@ -43,6 +43,19 @@ model Tournament {
   escrowAddress   String?           @map("escrow_address")
   creatorRakeCollected Decimal     @default(0) @map("creator_rake_collected") @db.Decimal(20, 9)
   creatorRakeWithdrawn  Decimal     @default(0) @map("creator_rake_withdrawn") @db.Decimal(20, 9)
+  
+  // Community Links
+  communityName        String?  @map("community_name")
+  communityDescription String?  @map("community_description") @db.Text
+  twitterUrl          String?  @map("twitter_url")
+  discordUrl          String?  @map("discord_url")
+  telegramUrl         String?  @map("telegram_url")
+  websiteUrl          String?  @map("website_url")
+  customLink1         String?  @map("custom_link_1")
+  customLink1Label    String?  @map("custom_link_1_label")
+  customLink2         String?  @map("custom_link_2")
+  customLink2Label    String?  @map("custom_link_2_label")
+  
   createdById     String            @map("created_by_id")
   createdBy       User              @relation("TournamentCreator", fields: [createdById], references: [id])
   startedAt       DateTime?         @map("started_at")

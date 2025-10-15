@@ -26,6 +26,18 @@ export default function CreateTournamentPage() {
   const [tokenType, setTokenType] = useState('SOL');
   const [tokenMint, setTokenMint] = useState('');
   const [tokenDecimals, setTokenDecimals] = useState('9');
+  
+  // Community Links
+  const [communityName, setCommunityName] = useState('');
+  const [communityDescription, setCommunityDescription] = useState('');
+  const [twitterUrl, setTwitterUrl] = useState('');
+  const [discordUrl, setDiscordUrl] = useState('');
+  const [telegramUrl, setTelegramUrl] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [customLink1, setCustomLink1] = useState('');
+  const [customLink1Label, setCustomLink1Label] = useState('');
+  const [customLink2, setCustomLink2] = useState('');
+  const [customLink2Label, setCustomLink2Label] = useState('');
 
   useEffect(() => {
     if (!connected) {
@@ -127,6 +139,17 @@ export default function CreateTournamentPage() {
           tokenMint: tokenType === 'SPL' ? tokenMint : null,
           tokenDecimals: tokenType === 'SPL' ? parseInt(tokenDecimals) : 9,
           escrowAddress: mockEscrowAddress,
+          // Community Links
+          communityName,
+          communityDescription,
+          twitterUrl,
+          discordUrl,
+          telegramUrl,
+          websiteUrl,
+          customLink1,
+          customLink1Label,
+          customLink2,
+          customLink2Label,
         }),
       });
 
@@ -459,6 +482,146 @@ export default function CreateTournamentPage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Community Links */}
+            <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+              <h3 className="text-lg font-semibold text-purple-400 mb-4">Community Links (Optional)</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                Add links to promote your community and attract more players to your tournament.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Community Name
+                  </label>
+                  <input
+                    type="text"
+                    value={communityName}
+                    onChange={(e) => setCommunityName(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="My Poker Community"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Community Description
+                  </label>
+                  <textarea
+                    value={communityDescription}
+                    onChange={(e) => setCommunityDescription(e.target.value)}
+                    rows={3}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="Join our friendly poker community..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Twitter/X URL
+                  </label>
+                  <input
+                    type="url"
+                    value={twitterUrl}
+                    onChange={(e) => setTwitterUrl(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="https://twitter.com/yourcommunity"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Discord URL
+                  </label>
+                  <input
+                    type="url"
+                    value={discordUrl}
+                    onChange={(e) => setDiscordUrl(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="https://discord.gg/yourcommunity"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Telegram URL
+                  </label>
+                  <input
+                    type="url"
+                    value={telegramUrl}
+                    onChange={(e) => setTelegramUrl(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="https://t.me/yourcommunity"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Website URL
+                  </label>
+                  <input
+                    type="url"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="https://yourcommunity.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Custom Link 1 Label
+                  </label>
+                  <input
+                    type="text"
+                    value={customLink1Label}
+                    onChange={(e) => setCustomLink1Label(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="e.g., YouTube, Twitch, Reddit"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Custom Link 1 URL
+                  </label>
+                  <input
+                    type="url"
+                    value={customLink1}
+                    onChange={(e) => setCustomLink1(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="https://youtube.com/yourcommunity"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Custom Link 2 Label
+                  </label>
+                  <input
+                    type="text"
+                    value={customLink2Label}
+                    onChange={(e) => setCustomLink2Label(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="e.g., Instagram, TikTok, Club"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Custom Link 2 URL
+                  </label>
+                  <input
+                    type="url"
+                    value={customLink2}
+                    onChange={(e) => setCustomLink2(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="https://instagram.com/yourcommunity"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Tournament Preview */}

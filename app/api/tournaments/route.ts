@@ -91,7 +91,18 @@ export async function POST(request: NextRequest) {
       tokenType = 'SOL',
       tokenMint = null,
       tokenDecimals = 9,
-      escrowAddress 
+      escrowAddress,
+      // Community Links
+      communityName,
+      communityDescription,
+      twitterUrl,
+      discordUrl,
+      telegramUrl,
+      websiteUrl,
+      customLink1,
+      customLink1Label,
+      customLink2,
+      customLink2Label,
     } = body;
     
     if (!name || buyIn === undefined || rakePercentage === undefined) {
@@ -152,6 +163,17 @@ export async function POST(request: NextRequest) {
         tokenMint,
         tokenDecimals,
         escrowAddress,
+        // Community Links
+        communityName,
+        communityDescription,
+        twitterUrl,
+        discordUrl,
+        telegramUrl,
+        websiteUrl,
+        customLink1,
+        customLink1Label,
+        customLink2,
+        customLink2Label,
         createdById: user.id,
         status: 'WAITING',
       },
