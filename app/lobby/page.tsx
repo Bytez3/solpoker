@@ -347,7 +347,7 @@ export default function LobbyPage() {
                       <div className="space-y-1 max-h-24 overflow-y-auto">
                         {tournament.players.map((player, index) => (
                           <div 
-                            key={player.walletAddress}
+                            key={player.walletAddress || `player-${index}`}
                             className={`flex items-center justify-between text-xs p-2 rounded ${
                               player.walletAddress === publicKey?.toBase58()
                                 ? 'bg-purple-600/20 border border-purple-500/30'
@@ -366,7 +366,7 @@ export default function LobbyPage() {
                               )}
                             </div>
                             <div className="text-gray-400 font-mono text-xs">
-                              {player.walletAddress.slice(0, 8)}...{player.walletAddress.slice(-4)}
+                              {player.walletAddress ? `${player.walletAddress.slice(0, 8)}...${player.walletAddress.slice(-4)}` : 'Unknown'}
                             </div>
                           </div>
                         ))}

@@ -476,7 +476,7 @@ export default function GamePage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
                     {waitingState.tournament.players.map((player, index) => (
                       <div 
-                        key={player.user.walletAddress}
+                        key={player.user.walletAddress || `player-${index}`}
                         className={`flex items-center justify-between text-xs p-2 rounded ${
                           player.user.walletAddress === publicKey?.toString()
                             ? 'bg-purple-600/20 border border-purple-500/30'
@@ -495,7 +495,7 @@ export default function GamePage() {
                           )}
                         </div>
                         <div className="text-gray-400 font-mono text-xs">
-                          {player.user.walletAddress.slice(0, 6)}...{player.user.walletAddress.slice(-4)}
+                          {player.user.walletAddress ? `${player.user.walletAddress.slice(0, 6)}...${player.user.walletAddress.slice(-4)}` : 'Unknown'}
                         </div>
                       </div>
                     ))}
@@ -716,7 +716,7 @@ export default function GamePage() {
                         )}
                       </div>
                       <div className="text-xs text-gray-400 font-mono mb-1">
-                        {player.walletAddress.slice(0, 8)}...{player.walletAddress.slice(-4)}
+                        {player.walletAddress ? `${player.walletAddress.slice(0, 8)}...${player.walletAddress.slice(-4)}` : 'Unknown'}
                       </div>
                       <div className="flex items-center gap-1">
                         <div className={`chip ${getChipColor(player.chips)} w-4 h-4`}></div>
