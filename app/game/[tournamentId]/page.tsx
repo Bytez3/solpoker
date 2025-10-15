@@ -161,8 +161,6 @@ function getTableStyling(theme?: string, color?: string, pattern?: string, image
 
 // Helper function to get player positions based on table size
 function getPlayerPositions(maxPlayers: number): string[] {
-  const positions: string[] = [];
-  
   if (maxPlayers === 2) {
     // Heads up - opposite sides
     return ['top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2', 'bottom-1/2 left-1/2 -translate-x-1/2 translate-y-1/2'];
@@ -270,7 +268,7 @@ export default function GamePage() {
       if (response.ok) {
         const data = await response.json();
         if (data.gameStarted && data.gameState) {
-          setGameState(data.gameState);
+        setGameState(data.gameState);
           setWaitingState(null);
         } else if (data.tournament) {
           setWaitingState(data as TournamentWaitingState);
@@ -293,21 +291,21 @@ export default function GamePage() {
         // Demo mode: Use API route
         console.log('🎮 Demo mode: Processing game action:', action);
 
-        const response = await fetch(`/api/game/${tournamentId}/action`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ action, amount }),
-        });
+      const response = await fetch(`/api/game/${tournamentId}/action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action, amount }),
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          setGameState(data.gameState);
-        } else {
-          const error = await response.json();
-          alert(error.error);
+      if (response.ok) {
+        const data = await response.json();
+        setGameState(data.gameState);
+      } else {
+        const error = await response.json();
+        alert(error.error);
         }
       } else {
         // Production mode: Create real Solana transaction
@@ -594,7 +592,7 @@ export default function GamePage() {
           </div>
 
           {/* Current Player Indicator */}
-          {gameState?.currentPlayerSeat !== null && (
+          {gameState?.currentPlayerSeat !== null && gameState && (
             <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20">
               <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Current Player</div>
               <div className="text-lg font-bold text-blue-400">
@@ -659,7 +657,7 @@ export default function GamePage() {
                   <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 border-white">
                     {player.seatPosition + 1}
                   </div>
-
+                  
                   {/* Player Header */}
                   <div className="flex items-center gap-3 mb-2">
                     <div className="player-avatar">

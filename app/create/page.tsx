@@ -165,7 +165,7 @@ export default function CreateTournamentPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         alert('Tournament created successfully!');
         router.push('/lobby');
       } else {

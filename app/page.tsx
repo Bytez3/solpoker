@@ -60,7 +60,7 @@ export default function Home() {
       if (authResponse.ok) {
         const { token } = await authResponse.json();
         localStorage.setItem('poker_token', token);
-        router.push('/lobby');
+      router.push('/lobby');
       } else {
         const errorData = await authResponse.json();
         alert(`Authentication failed: ${errorData.error || 'Unknown error'}`);
@@ -125,15 +125,15 @@ export default function Home() {
             <div className="mb-8">
               <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 mb-4">
                 Solana Poker League
-              </h1>
+          </h1>
               <div className="h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full w-32 mx-auto mb-6"></div>
               <p className="text-2xl md:text-3xl font-light text-slate-300 mb-4">
                 The Ultimate Decentralized Poker Experience
               </p>
               <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-                Join the world's most advanced blockchain poker platform. Compete in tournaments, climb the leaderboard, and win real SOL prizes.
-              </p>
-            </div>
+                Join the world&apos;s most advanced blockchain poker platform. Compete in tournaments, climb the leaderboard, and win real SOL prizes.
+          </p>
+        </div>
 
             {/* CTA Section */}
             <div className="mb-16">
@@ -407,7 +407,7 @@ export default function Home() {
               How to Play
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Master the art of decentralized Texas Hold'em in just a few simple steps
+              Master the art of decentralized Texas Hold&apos;em in just a few simple steps
             </p>
           </div>
 
@@ -550,7 +550,7 @@ export default function Home() {
                 <span className="text-xl font-bold text-white">Solana Poker League</span>
               </div>
               <p className="text-slate-400 mb-4 max-w-md">
-                The ultimate decentralized poker experience. Play Texas Hold'em tournaments, compete for real SOL prizes, and join the future of online poker.
+                The ultimate decentralized poker experience. Play Texas Hold&apos;em tournaments, compete for real SOL prizes, and join the future of online poker.
               </p>
               <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 backdrop-blur-sm">
                 <div className="text-xl animate-pulse">⚡</div>
@@ -584,8 +584,8 @@ export default function Home() {
           
           <div className="border-t border-slate-700/50 mt-8 pt-8 text-center text-slate-400">
             <p>&copy; 2024 Solana Poker League. Built on Solana blockchain for the future of poker.</p>
-          </div>
         </div>
+      </div>
       </footer>
     </div>
   );

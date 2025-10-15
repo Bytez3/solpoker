@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromToken, extractToken } from '@/lib/auth/wallet-auth';
-import { Decimal } from '@prisma/client/runtime/library';
 
 /**
  * POST /api/tournaments/[id]/withdraw-rake
