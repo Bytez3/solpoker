@@ -319,18 +319,25 @@ export default function GamePage() {
         try {
           // For now, create a simple memo transaction for game actions
           // TODO: Replace with actual poker program integration
-          const { Transaction, TransactionInstruction, SystemProgram, PublicKey } = await import('@solana/web3.js');
+          const { Transaction, TransactionInstruction, PublicKey } = await import('@solana/web3.js');
 
-          const transaction = new Transaction().add(
-            new TransactionInstruction({
-              keys: [
-                { pubkey: new PublicKey(publicKey.toBase58()), isSigner: true, isWritable: true },
-                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-              ],
-              programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
-              data: Buffer.from(`Game action: ${action}${amount ? ` ${amount} SOL` : ''} in tournament ${tournamentId}`),
-            })
-          );
+          const playerWallet = new PublicKey(publicKey.toBase58());
+          
+          // Create a proper memo instruction
+          const memoInstruction = new TransactionInstruction({
+            keys: [
+              { pubkey: playerWallet, isSigner: true, isWritable: false },
+            ],
+            programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+            data: Buffer.from(`Game action: ${action}${amount ? ` ${amount} SOL` : ''} in tournament ${tournamentId}`, 'utf8'),
+          });
+          
+          const transaction = new Transaction().add(memoInstruction);
+          
+          // Get recent blockhash
+          const { blockhash } = await connection.getLatestBlockhash();
+          transaction.recentBlockhash = blockhash;
+          transaction.feePayer = playerWallet;
 
           console.log('✍️ Requesting game action transaction signature...');
           const signature = await sendTransaction(transaction, connection);

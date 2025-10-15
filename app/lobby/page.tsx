@@ -106,17 +106,23 @@ export default function LobbyPage() {
 
           // Create a simple memo transaction for now
           // TODO: Replace with actual poker program integration
-          const { Transaction, TransactionInstruction, SystemProgram } = await import('@solana/web3.js');
-          const transaction = new Transaction().add(
-            new TransactionInstruction({
-              keys: [
-                { pubkey: playerWallet, isSigner: true, isWritable: true },
-                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-              ],
-              programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
-              data: Buffer.from(`Joining tournament: ${tournament.id}`),
-            })
-          );
+          const { Transaction, TransactionInstruction } = await import('@solana/web3.js');
+          
+          // Create a proper memo instruction
+          const memoInstruction = new TransactionInstruction({
+            keys: [
+              { pubkey: playerWallet, isSigner: true, isWritable: false },
+            ],
+            programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+            data: Buffer.from(`Joining tournament: ${tournament.id}`, 'utf8'),
+          });
+          
+          const transaction = new Transaction().add(memoInstruction);
+          
+          // Get recent blockhash
+          const { blockhash } = await connection.getLatestBlockhash();
+          transaction.recentBlockhash = blockhash;
+          transaction.feePayer = playerWallet;
 
           console.log('✍️ Requesting transaction signature...');
           const signature = await sendTransaction(transaction, connection);
