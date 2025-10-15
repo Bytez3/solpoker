@@ -338,6 +338,42 @@ export default function LobbyPage() {
                     </p>
                   </div>
 
+                  {/* Players List */}
+                  {tournament.players.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-300 mb-2">
+                        Players ({tournament.players.length}/{tournament.maxPlayers})
+                      </h4>
+                      <div className="space-y-1 max-h-24 overflow-y-auto">
+                        {tournament.players.map((player, index) => (
+                          <div 
+                            key={player.walletAddress}
+                            className={`flex items-center justify-between text-xs p-2 rounded ${
+                              player.walletAddress === publicKey?.toBase58()
+                                ? 'bg-purple-600/20 border border-purple-500/30'
+                                : 'bg-gray-700/50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                {index + 1}
+                              </div>
+                              <span className="text-gray-300">
+                                {player.username || `Player ${index + 1}`}
+                              </span>
+                              {player.walletAddress === publicKey?.toBase58() && (
+                                <span className="text-purple-400 font-semibold">(YOU)</span>
+                              )}
+                            </div>
+                            <div className="text-gray-400 font-mono text-xs">
+                              {player.walletAddress.slice(0, 8)}...{player.walletAddress.slice(-4)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     onClick={() => handleJoinTournament(tournament)}
                     disabled={joining === tournament.id}

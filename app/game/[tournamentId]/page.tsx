@@ -466,6 +466,44 @@ export default function GamePage() {
               </div>
             </div>
 
+            {/* Players List */}
+            {waitingState.tournament.players.length > 0 && (
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <h4 className="text-sm font-semibold text-gray-300 mb-2">
+                    Players ({waitingState.tournament.players.length}/{waitingState.tournament.maxPlayers})
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                    {waitingState.tournament.players.map((player, index) => (
+                      <div 
+                        key={player.user.walletAddress}
+                        className={`flex items-center justify-between text-xs p-2 rounded ${
+                          player.user.walletAddress === publicKey?.toString()
+                            ? 'bg-purple-600/20 border border-purple-500/30'
+                            : 'bg-gray-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                            {index + 1}
+                          </div>
+                          <span className="text-gray-300">
+                            {player.user.username || `Player ${index + 1}`}
+                          </span>
+                          {player.user.walletAddress === publicKey?.toString() && (
+                            <span className="text-purple-400 font-semibold">(YOU)</span>
+                          )}
+                        </div>
+                        <div className="text-gray-400 font-mono text-xs">
+                          {player.user.walletAddress.slice(0, 6)}...{player.user.walletAddress.slice(-4)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
                 {/* Player Seats - Show occupied and available (dynamic based on max players) */}
                 {Array.from({ length: waitingState.tournament.maxPlayers }, (_, index) => {
               const isOccupied = waitingState.tournament.players.some((player, playerIndex) =>
@@ -676,6 +714,9 @@ export default function GamePage() {
                         {isCurrentPlayer && (
                           <span className="ml-2 text-xs text-yellow-400 font-bold">(YOU)</span>
                         )}
+                      </div>
+                      <div className="text-xs text-gray-400 font-mono mb-1">
+                        {player.walletAddress.slice(0, 8)}...{player.walletAddress.slice(-4)}
                       </div>
                       <div className="flex items-center gap-1">
                         <div className={`chip ${getChipColor(player.chips)} w-4 h-4`}></div>
