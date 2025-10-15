@@ -230,15 +230,15 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto mb-16">
-              <div className="text-center group">
-                <div className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-2xl p-8 border border-purple-500/20 group-hover:border-purple-500/40 transition-all duration-300">
-                  <div className="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">🎰</div>
-                  <h4 className="text-xl font-bold text-purple-400 mb-4">1. Join Tournament</h4>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    Connect your Phantom wallet and pay the 0.1 SOL buy-in to enter a 6-player tournament
-                  </p>
-                </div>
-              </div>
+                  <div className="text-center group">
+                    <div className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-2xl p-8 border border-purple-500/20 group-hover:border-purple-500/40 transition-all duration-300">
+                      <div className="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">🎰</div>
+                      <h4 className="text-xl font-bold text-purple-400 mb-4">1. Join or Create</h4>
+                      <p className="text-gray-400 text-sm leading-relaxed">
+                        Join existing tournaments or create your own with 2-10 players, custom blinds, and privacy settings
+                      </p>
+                    </div>
+                  </div>
 
               <div className="text-center group">
                 <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 rounded-2xl p-8 border border-blue-500/20 group-hover:border-blue-500/40 transition-all duration-300">

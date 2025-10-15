@@ -27,8 +27,8 @@ export function initializeGame(
   smallBlind: number,
   bigBlind: number
 ): GameState {
-  if (players.length !== 6) {
-    throw new Error('Game requires exactly 6 players');
+  if (players.length < 2 || players.length > 10) {
+    throw new Error('Game requires between 2 and 10 players');
   }
   
   const playerStates: PlayerState[] = players.map((player, index) => ({
@@ -69,8 +69,8 @@ export function initializeGame(
 export function startNewHand(gameState: GameState): GameState {
   const newState = { ...gameState };
   
-  // Move dealer button
-  newState.dealerSeat = (newState.dealerSeat + 1) % 6;
+  // Move dealer button (circular for any number of players)
+  newState.dealerSeat = (newState.dealerSeat + 1) % newState.players.length;
   newState.handNumber++;
   
   // Reset players
@@ -85,8 +85,8 @@ export function startNewHand(gameState: GameState): GameState {
       status: player.chips > 0 ? 'active' : 'eliminated',
       lastAction: undefined,
       isDealer: seatPosition === dealerSeat,
-      isSmallBlind: seatPosition === (dealerSeat + 1) % 6,
-      isBigBlind: seatPosition === (dealerSeat + 2) % 6,
+      isSmallBlind: seatPosition === (dealerSeat + 1) % newState.players.length,
+      isBigBlind: seatPosition === (dealerSeat + 2) % newState.players.length,
     };
   });
   
@@ -98,9 +98,9 @@ export function startNewHand(gameState: GameState): GameState {
   newState.bettingRound = BettingRound.PRE_FLOP;
   newState.status = 'dealing';
   
-  // Post blinds
-  const smallBlindSeat = (newState.dealerSeat + 1) % 6;
-  const bigBlindSeat = (newState.dealerSeat + 2) % 6;
+  // Post blinds (dynamic for any number of players)
+  const smallBlindSeat = (newState.dealerSeat + 1) % newState.players.length;
+  const bigBlindSeat = (newState.dealerSeat + 2) % newState.players.length;
   
   const smallBlindPlayer = newState.players.find(p => p.seatPosition === smallBlindSeat);
   const bigBlindPlayer = newState.players.find(p => p.seatPosition === bigBlindSeat);

@@ -32,10 +32,14 @@ export default function AdminPage() {
   const [creating, setCreating] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
 
-  // Form state
+  // Enhanced form state
   const [name, setName] = useState('');
   const [buyIn, setBuyIn] = useState('0.1');
   const [rakePercentage, setRakePercentage] = useState('5');
+  const [maxPlayers, setMaxPlayers] = useState('6');
+  const [tournamentType, setTournamentType] = useState('sit_n_go');
+  const [privacy, setPrivacy] = useState('public');
+  const [blindStructure, setBlindStructure] = useState('progressive');
 
   useEffect(() => {
     if (!connected) {
@@ -171,6 +175,10 @@ export default function AdminPage() {
           name,
           buyIn: parseFloat(buyIn),
           rakePercentage: parseFloat(rakePercentage),
+          maxPlayers: parseInt(maxPlayers),
+          tournamentType,
+          privacy,
+          blindStructure,
           escrowAddress: mockEscrowAddress,
         }),
       });
@@ -180,6 +188,10 @@ export default function AdminPage() {
         setName('');
         setBuyIn('0.1');
         setRakePercentage('5');
+        setMaxPlayers('6');
+        setTournamentType('sit_n_go');
+        setPrivacy('public');
+        setBlindStructure('progressive');
         fetchStats();
       } else {
         const error = await response.json();
@@ -332,62 +344,178 @@ export default function AdminPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Create Tournament */}
+          {/* Enhanced Create Tournament */}
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h2 className="text-2xl font-bold mb-6">Create Tournament</h2>
+            <h2 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+              Create Enhanced Tournament
+            </h2>
 
-            <form onSubmit={handleCreateTournament} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Tournament Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
-                  placeholder="Friday Night Poker"
-                />
+            <form onSubmit={handleCreateTournament} className="space-y-6">
+              {/* Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Tournament Name
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                    placeholder="Friday Night Poker"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Max Players
+                  </label>
+                  <select
+                    value={maxPlayers}
+                    onChange={(e) => setMaxPlayers(e.target.value)}
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="2">2 Players (Heads Up)</option>
+                    <option value="3">3 Players</option>
+                    <option value="4">4 Players</option>
+                    <option value="5">5 Players</option>
+                    <option value="6">6 Players (Standard)</option>
+                    <option value="7">7 Players</option>
+                    <option value="8">8 Players</option>
+                    <option value="9">9 Players</option>
+                    <option value="10">10 Players (Full Ring)</option>
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Buy-in (SOL)
-                </label>
-                <input
-                  type="number"
-                  value={buyIn}
-                  onChange={(e) => setBuyIn(e.target.value)}
-                  required
-                  step="0.001"
-                  min="0.001"
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
-                />
+              {/* Financial Settings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Buy-in (SOL)
+                  </label>
+                  <input
+                    type="number"
+                    value={buyIn}
+                    onChange={(e) => setBuyIn(e.target.value)}
+                    required
+                    step="0.001"
+                    min="0.001"
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Rake Percentage (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={rakePercentage}
+                    onChange={(e) => setRakePercentage(e.target.value)}
+                    required
+                    step="0.5"
+                    min="0"
+                    max="10"
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Rake Percentage (%)
-                </label>
-                <input
-                  type="number"
-                  value={rakePercentage}
-                  onChange={(e) => setRakePercentage(e.target.value)}
-                  required
-                  step="0.5"
-                  min="0"
-                  max="10"
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
-                />
+              {/* Tournament Configuration */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Tournament Type
+                  </label>
+                  <select
+                    value={tournamentType}
+                    onChange={(e) => setTournamentType(e.target.value)}
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="sit_n_go">Sit & Go</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="bounty">Bounty</option>
+                    <option value="rebuy">Rebuy</option>
+                    <option value="free_roll">Free Roll</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Privacy
+                  </label>
+                  <select
+                    value={privacy}
+                    onChange={(e) => setPrivacy(e.target.value)}
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                    <option value="friends_only">Friends Only</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Blind Structure
+                  </label>
+                  <select
+                    value={blindStructure}
+                    onChange={(e) => setBlindStructure(e.target.value)}
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="progressive">Progressive</option>
+                    <option value="turbo">Turbo</option>
+                    <option value="slow">Slow</option>
+                    <option value="hyper_turbo">Hyper Turbo</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Tournament Preview */}
+              <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                <h3 className="text-lg font-semibold text-purple-400 mb-3">Tournament Preview</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-400">Prize Pool:</span>
+                    <div className="font-semibold text-green-400">
+                      {(parseFloat(buyIn) * parseInt(maxPlayers) * (1 - parseFloat(rakePercentage) / 100)).toFixed(3)} SOL
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">House Rake:</span>
+                    <div className="font-semibold text-yellow-400">
+                      {(parseFloat(buyIn) * parseInt(maxPlayers) * parseFloat(rakePercentage) / 100).toFixed(3)} SOL
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Table Size:</span>
+                    <div className="font-semibold text-blue-400">{maxPlayers} Players</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Type:</span>
+                    <div className="font-semibold text-pink-400 capitalize">
+                      {tournamentType.replace('_', ' ')}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={creating}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                {creating ? 'Creating...' : 'Create Tournament'}
+                {creating ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Creating Enhanced Tournament...</span>
+                  </div>
+                ) : (
+                  '🚀 Create Enhanced Tournament'
+                )}
               </button>
             </form>
           </div>

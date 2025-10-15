@@ -24,6 +24,9 @@ interface Tournament {
   rakePercentage: number | { toString: () => string };
   status: string;
   maxPlayers: number;
+  tournamentType: string;
+  privacy: string;
+  blindStructure: string;
   players: TournamentPlayer[];
   createdAt: string;
 }
@@ -210,10 +213,18 @@ export default function LobbyPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Tournament Lobby</h2>
-          <p className="text-gray-400">Join a tournament or wait for more players</p>
-        </div>
+          <div className="mb-8 flex justify-between items-center">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Tournament Lobby</h2>
+              <p className="text-gray-400">Join a tournament or create your own</p>
+            </div>
+            <button
+              onClick={() => router.push('/create')}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              🚀 Create Tournament
+            </button>
+          </div>
 
         {loading ? (
           <div className="text-center py-12">
@@ -245,35 +256,63 @@ export default function LobbyPage() {
                   key={tournament.id}
                   className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-purple-500 transition-colors"
                 >
-                  <h3 className="text-xl font-semibold mb-4">{tournament.name}</h3>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Buy-in:</span>
-                      <span className="font-semibold text-green-400">
-                        {buyInSol.toFixed(3)} SOL
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Rake:</span>
-                      <span className="text-gray-300">{rake}%</span>
-                    </div>
-                    
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Players:</span>
-                      <span className="text-gray-300">
-                        {playersJoined}/{tournament.maxPlayers}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Prize Pool:</span>
-                      <span className="font-semibold text-purple-400">
-                        {(buyInSol * tournament.maxPlayers * (1 - rake / 100)).toFixed(3)} SOL
-                      </span>
-                    </div>
-                  </div>
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-xl font-semibold">{tournament.name}</h3>
+                        <div className="flex gap-2">
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            tournament.tournamentType === 'sit_n_go' ? 'bg-blue-600' :
+                            tournament.tournamentType === 'scheduled' ? 'bg-green-600' :
+                            tournament.tournamentType === 'bounty' ? 'bg-red-600' :
+                            tournament.tournamentType === 'rebuy' ? 'bg-yellow-600' :
+                            'bg-purple-600'
+                          }`}>
+                            {tournament.tournamentType.replace('_', ' ').toUpperCase()}
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            tournament.privacy === 'public' ? 'bg-green-600' :
+                            tournament.privacy === 'private' ? 'bg-red-600' :
+                            'bg-yellow-600'
+                          }`}>
+                            {tournament.privacy.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3 mb-6">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-400">Buy-in:</span>
+                            <div className="font-semibold text-green-400">
+                              {buyInSol.toFixed(3)} SOL
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Rake:</span>
+                            <div className="text-gray-300">{rake}%</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Players:</span>
+                            <div className="text-gray-300">
+                              {playersJoined}/{tournament.maxPlayers}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Blinds:</span>
+                            <div className="text-gray-300 capitalize">
+                              {tournament.blindStructure.replace('_', ' ')}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gray-700 rounded-lg p-3 mt-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-400">Prize Pool:</span>
+                            <span className="font-semibold text-purple-400">
+                              {(buyInSol * tournament.maxPlayers * (1 - rake / 100)).toFixed(3)} SOL
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
                   {/* Progress bar */}
                   <div className="mb-4">

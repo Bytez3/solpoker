@@ -69,19 +69,38 @@ export async function POST(request: NextRequest) {
     
     const user = await getUserFromToken(token);
     
-    if (!user || !user.isAdmin) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
+        { error: 'Invalid token' },
+        { status: 401 }
       );
     }
     
+    // Allow any authenticated user to create tournaments (community feature)
+    // Admin users get additional privileges but regular users can also create
+    
     const body = await request.json();
-    const { name, buyIn, rakePercentage, escrowAddress } = body;
+    const { 
+      name, 
+      buyIn, 
+      rakePercentage, 
+      maxPlayers = 6,
+      tournamentType = 'sit_n_go',
+      privacy = 'public',
+      blindStructure = 'progressive',
+      escrowAddress 
+    } = body;
     
     if (!name || buyIn === undefined || rakePercentage === undefined) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+    
+    if (maxPlayers < 2 || maxPlayers > 10) {
+      return NextResponse.json(
+        { error: 'Max players must be between 2 and 10' },
         { status: 400 }
       );
     }
@@ -98,6 +117,10 @@ export async function POST(request: NextRequest) {
         name,
         buyIn: new Decimal(buyIn),
         rakePercentage: new Decimal(rakePercentage),
+        maxPlayers,
+        tournamentType,
+        privacy,
+        blindStructure,
         escrowAddress,
         createdById: user.id,
         status: 'WAITING',

@@ -22,9 +22,16 @@ export class TournamentManager {
   private gameStates: Map<string, GameState> = new Map();
   
   /**
-   * Check if tournament is ready to start (6 players joined)
+   * Check if tournament is ready to start (based on max players)
    */
   async isTournamentReady(tournamentId: string): Promise<boolean> {
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      select: { maxPlayers: true },
+    });
+    
+    if (!tournament) return false;
+    
     const playerCount = await prisma.tournamentPlayer.count({
       where: {
         tournamentId,
@@ -32,7 +39,7 @@ export class TournamentManager {
       },
     });
     
-    return playerCount === 6;
+    return playerCount === tournament.maxPlayers;
   }
   
   /**
@@ -55,8 +62,8 @@ export class TournamentManager {
       throw new Error('Tournament not found');
     }
     
-    if (tournament.players.length !== 6) {
-      throw new Error('Tournament needs exactly 6 players');
+    if (tournament.players.length !== tournament.maxPlayers) {
+      throw new Error(`Tournament needs exactly ${tournament.maxPlayers} players`);
     }
     
     // Update tournament status

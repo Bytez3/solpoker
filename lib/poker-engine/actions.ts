@@ -244,16 +244,16 @@ export function getNextPlayerSeat(gameState: GameState, currentSeat: number): nu
     return null;
   }
   
-  // Find next player clockwise
-  let nextSeat = (currentSeat + 1) % 6;
+  // Find next player clockwise (dynamic for any number of players)
+  let nextSeat = (currentSeat + 1) % gameState.players.length;
   let attempts = 0;
   
-  while (attempts < 6) {
+  while (attempts < gameState.players.length) {
     const player = gameState.players.find(p => p.seatPosition === nextSeat);
     if (player && player.status === 'active') {
       return nextSeat;
     }
-    nextSeat = (nextSeat + 1) % 6;
+    nextSeat = (nextSeat + 1) % gameState.players.length;
     attempts++;
   }
   

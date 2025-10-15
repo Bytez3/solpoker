@@ -69,6 +69,48 @@ interface TournamentWaitingState {
   playerSeat: number;
 }
 
+// Helper function to get player positions based on table size
+function getPlayerPositions(maxPlayers: number): string[] {
+  const positions: string[] = [];
+  
+  if (maxPlayers === 2) {
+    // Heads up - opposite sides
+    return ['top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2', 'bottom-1/2 left-1/2 -translate-x-1/2 translate-y-1/2'];
+  } else if (maxPlayers <= 4) {
+    // Small table - corners
+    return [
+      'top-6 left-1/2 -translate-x-1/2',
+      'top-1/2 right-8 -translate-y-1/2',
+      'bottom-6 left-1/2 -translate-x-1/2',
+      'top-1/2 left-8 -translate-y-1/2',
+    ].slice(0, maxPlayers);
+  } else if (maxPlayers <= 6) {
+    // Medium table - 6 positions
+    return [
+      'top-6 left-1/2 -translate-x-1/2',
+      'top-1/4 right-8',
+      'bottom-1/4 right-8',
+      'bottom-6 left-1/2 -translate-x-1/2',
+      'bottom-1/4 left-8',
+      'top-1/4 left-8',
+    ].slice(0, maxPlayers);
+  } else {
+    // Large table - 8-10 positions
+    return [
+      'top-8 left-1/2 -translate-x-1/2',
+      'top-1/3 right-6',
+      'top-2/3 right-6',
+      'bottom-1/3 right-6',
+      'bottom-2/3 right-6',
+      'bottom-8 left-1/2 -translate-x-1/2',
+      'bottom-2/3 left-6',
+      'bottom-1/3 left-6',
+      'top-2/3 left-6',
+      'top-1/3 left-6',
+    ].slice(0, maxPlayers);
+  }
+}
+
 // Helper function for suit symbols
 function getSuitSymbol(suit: string): string {
   const symbols: Record<string, string> = {
@@ -285,27 +327,20 @@ export default function GamePage() {
               </div>
             </div>
 
-            {/* Player Seats - Show occupied and available */}
-            {Array.from({ length: 6 }, (_, index) => {
+                {/* Player Seats - Show occupied and available (dynamic based on max players) */}
+                {Array.from({ length: waitingState.tournament.maxPlayers }, (_, index) => {
               const isOccupied = waitingState.tournament.players.some((player, playerIndex) =>
                 index === waitingState.playerSeat || playerIndex === index
               );
               const isCurrentPlayer = index === waitingState.playerSeat;
 
-              const positions = [
-                'top-6 left-1/2 -translate-x-1/2',
-                'top-1/4 right-8',
-                'bottom-1/4 right-8',
-                'bottom-6 left-1/2 -translate-x-1/2',
-                'bottom-1/4 left-8',
-                'top-1/4 left-8',
-              ];
+                  const positions = getPlayerPositions(waitingState.tournament.maxPlayers);
 
-              return (
-                <div
-                  key={index}
-                  className={`absolute ${positions[index]} transform z-10`}
-                >
+                  return (
+                    <div
+                      key={index}
+                      className={`absolute ${positions[index]} transform z-10`}
+                    >
                   <div className={`player-seat bg-gray-900 rounded-xl p-4 min-w-[160px] border-2 backdrop-blur-sm ${
                     isCurrentPlayer ? 'current-player border-purple-500' :
                     isOccupied ? 'border-green-500' : 'border-gray-600 opacity-50'
@@ -438,15 +473,8 @@ export default function GamePage() {
             const isActive = player.status === 'active';
             const isTurn = gameState?.currentPlayerSeat === player.seatPosition;
 
-            // Position around the table
-            const positions = [
-              'top-6 left-1/2 -translate-x-1/2',
-              'top-1/4 right-8',
-              'bottom-1/4 right-8',
-              'bottom-6 left-1/2 -translate-x-1/2',
-              'bottom-1/4 left-8',
-              'top-1/4 left-8',
-            ];
+                // Position around the table (dynamic based on player count)
+                const positions = getPlayerPositions(gameState.players.length);
 
             return (
               <div
