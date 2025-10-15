@@ -63,10 +63,100 @@ interface TournamentWaitingState {
         username: string | null;
       };
     }>;
+    // Table Customization
+    tableTheme?: string;
+    tableColor?: string;
+    tablePattern?: string;
+    tableImage?: string;
   };
   gameStarted: false;
   availableSeats: number;
   playerSeat: number;
+}
+
+// Helper function to get table styling based on theme
+function getTableStyling(theme?: string, color?: string, pattern?: string, image?: string) {
+  const baseClasses = "relative poker-table rounded-full aspect-[16/10] border-8 shadow-2xl p-8";
+  
+  let colorClass = "border-amber-900";
+  let backgroundClass = "bg-gradient-to-br from-green-800 to-green-900";
+  
+  // Color styling
+  switch (color) {
+    case 'blue':
+      colorClass = "border-blue-900";
+      backgroundClass = "bg-gradient-to-br from-blue-800 to-blue-900";
+      break;
+    case 'red':
+      colorClass = "border-red-900";
+      backgroundClass = "bg-gradient-to-br from-red-800 to-red-900";
+      break;
+    case 'purple':
+      colorClass = "border-purple-900";
+      backgroundClass = "bg-gradient-to-br from-purple-800 to-purple-900";
+      break;
+    case 'black':
+      colorClass = "border-gray-900";
+      backgroundClass = "bg-gradient-to-br from-gray-900 to-black";
+      break;
+    case 'gold':
+      colorClass = "border-yellow-900";
+      backgroundClass = "bg-gradient-to-br from-yellow-800 to-yellow-900";
+      break;
+    case 'silver':
+      colorClass = "border-gray-700";
+      backgroundClass = "bg-gradient-to-br from-gray-600 to-gray-800";
+      break;
+  }
+  
+  // Pattern styling
+  let patternClass = "";
+  switch (pattern) {
+    case 'leather':
+      patternClass = "opacity-90";
+      break;
+    case 'marble':
+      patternClass = "bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400";
+      break;
+    case 'wood':
+      patternClass = "bg-gradient-to-br from-amber-800 via-amber-700 to-amber-900";
+      break;
+    case 'metal':
+      patternClass = "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600";
+      break;
+    case 'fabric':
+      patternClass = "opacity-95";
+      break;
+    case 'glass':
+      patternClass = "bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400 opacity-80";
+      break;
+  }
+  
+  // Theme-specific styling
+  let themeClass = "";
+  switch (theme) {
+    case 'modern':
+      themeClass = "border-4";
+      break;
+    case 'luxury':
+      themeClass = "border-12 shadow-3xl";
+      break;
+    case 'neon':
+      themeClass = "border-4 shadow-neon";
+      break;
+    case 'vintage':
+      themeClass = "border-6 border-double";
+      break;
+    case 'space':
+      themeClass = "border-4 shadow-2xl";
+      backgroundClass = "bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900";
+      break;
+  }
+  
+  return {
+    className: `${baseClasses} ${colorClass} ${backgroundClass} ${patternClass} ${themeClass}`,
+    backgroundImage: image ? `url(${image})` : undefined
+  };
 }
 
 // Helper function to get player positions based on table size
@@ -309,7 +399,48 @@ export default function GamePage() {
 
         {/* Poker Table - Waiting State */}
         <div className="max-w-6xl mx-auto poker-table-container">
-          <div className="relative poker-table rounded-full aspect-[16/10] border-8 border-amber-900 shadow-2xl p-8">
+          <div 
+            className={getTableStyling(
+              waitingState.tournament.tableTheme,
+              waitingState.tournament.tableColor,
+              waitingState.tournament.tablePattern,
+              waitingState.tournament.tableImage
+            ).className}
+            style={{
+              backgroundImage: getTableStyling(
+                waitingState.tournament.tableTheme,
+                waitingState.tournament.tableColor,
+                waitingState.tournament.tablePattern,
+                waitingState.tournament.tableImage
+              ).backgroundImage
+            }}
+          >
+            {/* Seat Positions */}
+            {getPlayerPositions(waitingState.tournament.maxPlayers).map((position, index) => {
+              const isOccupied = waitingState.tournament.players.some(p => p.user.walletAddress === publicKey?.toString());
+              const isUserSeat = index === waitingState.playerSeat;
+              const seatNumber = index + 1;
+              
+              return (
+                <div key={index} className={`absolute ${position}`}>
+                  <div className={`w-16 h-16 rounded-full border-4 flex items-center justify-center text-sm font-bold ${
+                    isUserSeat 
+                      ? 'border-yellow-400 bg-yellow-400/20 text-yellow-400 shadow-lg shadow-yellow-400/50' 
+                      : isOccupied 
+                        ? 'border-green-400 bg-green-400/20 text-green-400' 
+                        : 'border-gray-500 bg-gray-500/20 text-gray-500'
+                  }`}>
+                    {isUserSeat ? 'YOU' : isOccupied ? 'OCC' : seatNumber}
+                  </div>
+                  {isUserSeat && (
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-yellow-400 font-semibold">
+                      Your Seat
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
             {/* Waiting Message */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
               <div className="bg-black/40 backdrop-blur-sm rounded-xl p-8 border border-white/20">
@@ -317,12 +448,15 @@ export default function GamePage() {
                 <p className="text-xl text-gray-300 mb-4">
                   {waitingState.availableSeats} more player{waitingState.availableSeats !== 1 ? 's' : ''} needed
                 </p>
-                <div className="text-lg text-purple-400">
+                <div className="text-lg text-purple-400 mb-2">
                   {waitingState.playerSeat !== -1 ? (
                     `You're seated at position ${waitingState.playerSeat + 1}`
                   ) : (
                     'You\'re waiting to be seated...'
                   )}
+                </div>
+                <div className="text-sm text-gray-400">
+                  Table Theme: {waitingState.tournament.tableTheme || 'Classic'} • {waitingState.tournament.tableColor || 'Green'}
                 </div>
               </div>
             </div>
@@ -437,11 +571,37 @@ export default function GamePage() {
       {/* Poker Table */}
       <div className="max-w-6xl mx-auto poker-table-container">
         <div className="relative poker-table rounded-full aspect-[16/10] border-8 border-amber-900 shadow-2xl p-8">
+          {/* Game Phase Indicator */}
+          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20">
+            <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Phase</div>
+            <div className="text-lg font-bold text-white">
+              {gameState?.bettingRound === 'preflop' ? 'Pre-Flop' :
+               gameState?.bettingRound === 'flop' ? 'Flop' :
+               gameState?.bettingRound === 'turn' ? 'Turn' :
+               gameState?.bettingRound === 'river' ? 'River' :
+               gameState?.bettingRound === 'showdown' ? 'Showdown' :
+               'Waiting'}
+            </div>
+            <div className="text-xs text-gray-400">
+              Hand #{gameState?.handNumber || 1}
+            </div>
+          </div>
+
           {/* Pot Display */}
           <div className="absolute top-8 left-1/2 transform -translate-x-1/2 pot-display rounded-lg px-6 py-3">
             <div className="text-xs text-yellow-400 font-semibold uppercase tracking-wider">Pot</div>
             <div className="text-3xl font-bold text-yellow-400">{gameState?.pot?.toFixed(3) || '0.000'} SOL</div>
           </div>
+
+          {/* Current Player Indicator */}
+          {gameState?.currentPlayerSeat !== null && (
+            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20">
+              <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Current Player</div>
+              <div className="text-lg font-bold text-blue-400">
+                Seat {gameState.currentPlayerSeat + 1}
+              </div>
+            </div>
+          )}
 
           {/* Community Cards */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -495,6 +655,11 @@ export default function GamePage() {
                   'border-gray-700'
                 } ${player.status === 'folded' ? 'opacity-50' : ''}`}>
                   
+                  {/* Seat Position Indicator */}
+                  <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 border-white">
+                    {player.seatPosition + 1}
+                  </div>
+
                   {/* Player Header */}
                   <div className="flex items-center gap-3 mb-2">
                     <div className="player-avatar">
@@ -503,6 +668,9 @@ export default function GamePage() {
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold text-white truncate">
                         {player.username || `Player ${player.seatPosition + 1}`}
+                        {isCurrentPlayer && (
+                          <span className="ml-2 text-xs text-yellow-400 font-bold">(YOU)</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1">
                         <div className={`chip ${getChipColor(player.chips)} w-4 h-4`}></div>

@@ -45,10 +45,19 @@ pub mod poker_escrow {
         tournament_type: TournamentType,
         privacy: TournamentPrivacy,
         blind_structure: BlindStructure,
+        token_type: TokenType,
+        token_mint: Option<Pubkey>,
+        token_decimals: u8,
     ) -> Result<()> {
         require!(rake_percentage <= 1000, ErrorCode::RakeTooHigh); // Max 10%
         require!(buy_in > 0, ErrorCode::InvalidBuyIn);
         require!(max_players >= 2 && max_players <= 10, ErrorCode::InvalidMaxPlayers);
+        
+        // Validate SPL token requirements
+        if token_type == TokenType::SPL {
+            require!(token_mint.is_some(), ErrorCode::InvalidTokenMint);
+            require!(token_decimals <= 9, ErrorCode::InvalidTokenDecimals);
+        }
         
         let tournament = &mut ctx.accounts.tournament_escrow;
         tournament.creator = ctx.accounts.creator.key();
@@ -65,6 +74,11 @@ pub mod poker_escrow {
         tournament.privacy = privacy as u8;
         tournament.blind_structure = blind_structure as u8;
         tournament.status = TournamentStatus::Waiting as u8;
+        // SPL Token Support
+        tournament.token_type = token_type as u8;
+        tournament.token_mint = token_mint;
+        tournament.token_decimals = token_decimals;
+        tournament.token_vault = None; // Will be set when first player joins
         tournament.created_at = Clock::get()?.unix_timestamp;
         tournament.bump = ctx.bumps.tournament_escrow;
         
@@ -118,20 +132,46 @@ pub mod poker_escrow {
         );
         
         // Transfer buy-in from player to escrow
-        let transfer_instruction = anchor_lang::solana_program::system_instruction::transfer(
-            &ctx.accounts.player.key(),
-            &tournament.key(),
-            tournament.buy_in,
-        );
-        
-        anchor_lang::solana_program::program::invoke(
-            &transfer_instruction,
-            &[
-                ctx.accounts.player.to_account_info(),
-                tournament.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-        )?;
+        match TokenType::from(tournament.token_type) {
+            TokenType::SOL => {
+                // SOL transfer
+                let transfer_instruction = anchor_lang::solana_program::system_instruction::transfer(
+                    &ctx.accounts.player.key(),
+                    &tournament.key(),
+                    tournament.buy_in,
+                );
+                
+                anchor_lang::solana_program::program::invoke(
+                    &transfer_instruction,
+                    &[
+                        ctx.accounts.player.to_account_info(),
+                        tournament.to_account_info(),
+                        ctx.accounts.system_program.to_account_info(),
+                    ],
+                )?;
+            },
+            TokenType::SPL => {
+                // TODO: Implement SPL token transfers
+                // For now, this is a placeholder that will be implemented in the next phase
+                msg!("SPL token transfers not yet implemented - using SOL transfer as fallback");
+                
+                // Fallback to SOL transfer for now
+                let transfer_instruction = anchor_lang::solana_program::system_instruction::transfer(
+                    &ctx.accounts.player.key(),
+                    &tournament.key(),
+                    tournament.buy_in,
+                );
+                
+                anchor_lang::solana_program::program::invoke(
+                    &transfer_instruction,
+                    &[
+                        ctx.accounts.player.to_account_info(),
+                        tournament.to_account_info(),
+                        ctx.accounts.system_program.to_account_info(),
+                    ],
+                )?;
+            }
+        }
         
         // Calculate rake and split it
         let rake = (tournament.buy_in * tournament.rake_percentage as u64) / 10000;
@@ -475,6 +515,11 @@ pub struct TournamentEscrow {
     pub privacy: u8,
     pub blind_structure: u8,
     pub status: u8,
+    // SPL Token Support
+    pub token_type: u8,              // 0 = SOL, 1 = SPL
+    pub token_mint: Option<Pubkey>,  // SPL token mint address
+    pub token_decimals: u8,          // SPL token decimals
+    pub token_vault: Option<Pubkey>, // SPL token vault account
     pub player_addresses: Vec<Pubkey>,
     pub winners: Option<Vec<Pubkey>>,
     pub created_at: i64,
@@ -501,6 +546,10 @@ impl TournamentEscrow {
         1 + // privacy
         1 + // blind_structure
         1 + // status
+        1 + // token_type
+        1 + 32 + // token_mint Option<Pubkey>
+        1 + // token_decimals
+        1 + 32 + // token_vault Option<Pubkey>
         4 + (32 * max_players as usize) + // player_addresses Vec
         1 + 4 + (32 * max_players as usize) + // winners Option<Vec<Pubkey>>
         8 + // created_at
@@ -545,6 +594,12 @@ pub enum BlindStructure {
     HyperTurbo,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug)]
+pub enum TokenType {
+    SOL,
+    SPL,
+}
+
 impl From<u8> for TournamentPrivacy {
     fn from(value: u8) -> Self {
         match value {
@@ -552,6 +607,16 @@ impl From<u8> for TournamentPrivacy {
             1 => TournamentPrivacy::Private,
             2 => TournamentPrivacy::FriendsOnly,
             _ => TournamentPrivacy::Public,
+        }
+    }
+}
+
+impl From<u8> for TokenType {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => TokenType::SOL,
+            1 => TokenType::SPL,
+            _ => TokenType::SOL,
         }
     }
 }
@@ -598,5 +663,11 @@ pub enum ErrorCode {
     InvalidRakeSplit,
     #[msg("Invalid rake percentage: Must be between 0 and 100%")]
     InvalidRakePercentage,
+    #[msg("Invalid token mint address")]
+    InvalidTokenMint,
+    #[msg("Invalid token decimals")]
+    InvalidTokenDecimals,
+    #[msg("Token vault not initialized")]
+    TokenVaultNotInitialized,
 }
 

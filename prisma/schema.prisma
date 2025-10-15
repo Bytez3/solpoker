@@ -56,6 +56,12 @@ model Tournament {
   customLink2         String?  @map("custom_link_2")
   customLink2Label    String?  @map("custom_link_2_label")
   
+  // Table Customization
+  tableTheme          String?  @default("classic") @map("table_theme")
+  tableColor          String?  @default("green") @map("table_color")
+  tablePattern        String?  @default("felt") @map("table_pattern")
+  tableImage          String?  @map("table_image")
+  
   createdById     String            @map("created_by_id")
   createdBy       User              @relation("TournamentCreator", fields: [createdById], references: [id])
   startedAt       DateTime?         @map("started_at")

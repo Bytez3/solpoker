@@ -38,6 +38,12 @@ export default function CreateTournamentPage() {
   const [customLink1Label, setCustomLink1Label] = useState('');
   const [customLink2, setCustomLink2] = useState('');
   const [customLink2Label, setCustomLink2Label] = useState('');
+  
+  // Table Customization
+  const [tableTheme, setTableTheme] = useState('classic');
+  const [tableColor, setTableColor] = useState('green');
+  const [tablePattern, setTablePattern] = useState('felt');
+  const [tableImage, setTableImage] = useState('');
 
   useEffect(() => {
     if (!connected) {
@@ -150,6 +156,11 @@ export default function CreateTournamentPage() {
           customLink1Label,
           customLink2,
           customLink2Label,
+          // Table Customization
+          tableTheme,
+          tableColor,
+          tablePattern,
+          tableImage,
         }),
       });
 
@@ -620,6 +631,113 @@ export default function CreateTournamentPage() {
                     className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
                     placeholder="https://instagram.com/yourcommunity"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Table Customization */}
+            <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+              <h3 className="text-lg font-semibold text-purple-400 mb-4">Table Customization</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                Customize your poker table appearance to create a unique gaming experience.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Table Theme
+                  </label>
+                  <select
+                    value={tableTheme}
+                    onChange={(e) => setTableTheme(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="classic">Classic</option>
+                    <option value="modern">Modern</option>
+                    <option value="luxury">Luxury</option>
+                    <option value="neon">Neon</option>
+                    <option value="vintage">Vintage</option>
+                    <option value="space">Space</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Table Color
+                  </label>
+                  <select
+                    value={tableColor}
+                    onChange={(e) => setTableColor(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="green">Green (Classic)</option>
+                    <option value="blue">Blue</option>
+                    <option value="red">Red</option>
+                    <option value="purple">Purple</option>
+                    <option value="black">Black</option>
+                    <option value="gold">Gold</option>
+                    <option value="silver">Silver</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Table Pattern
+                  </label>
+                  <select
+                    value={tablePattern}
+                    onChange={(e) => setTablePattern(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="felt">Felt</option>
+                    <option value="leather">Leather</option>
+                    <option value="marble">Marble</option>
+                    <option value="wood">Wood</option>
+                    <option value="metal">Metal</option>
+                    <option value="fabric">Fabric</option>
+                    <option value="glass">Glass</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Custom Table Image URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={tableImage}
+                    onChange={(e) => setTableImage(e.target.value)}
+                    className="w-full bg-gray-600 text-white rounded-lg px-4 py-3 border border-gray-500 focus:border-purple-500 focus:outline-none"
+                    placeholder="https://example.com/table-image.jpg"
+                  />
+                </div>
+              </div>
+
+              {/* Table Preview */}
+              <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-600">
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">Table Preview</h4>
+                <div className="flex items-center space-x-4">
+                  <div className={`w-16 h-12 rounded-lg border-2 border-gray-500 ${
+                    tableColor === 'green' ? 'bg-green-600' :
+                    tableColor === 'blue' ? 'bg-blue-600' :
+                    tableColor === 'red' ? 'bg-red-600' :
+                    tableColor === 'purple' ? 'bg-purple-600' :
+                    tableColor === 'black' ? 'bg-black' :
+                    tableColor === 'gold' ? 'bg-yellow-600' :
+                    tableColor === 'silver' ? 'bg-gray-400' : 'bg-green-600'
+                  } ${tablePattern === 'leather' ? 'opacity-80' : ''} ${
+                    tablePattern === 'marble' ? 'bg-gradient-to-br from-gray-200 to-gray-400' : ''
+                  }`}>
+                    {tableImage && (
+                      <div className="w-full h-full rounded-lg bg-cover bg-center" 
+                           style={{backgroundImage: `url(${tableImage})`}} />
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    <div><span className="font-semibold">Theme:</span> {tableTheme}</div>
+                    <div><span className="font-semibold">Color:</span> {tableColor}</div>
+                    <div><span className="font-semibold">Pattern:</span> {tablePattern}</div>
+                  </div>
                 </div>
               </div>
             </div>

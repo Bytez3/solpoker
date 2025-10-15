@@ -103,6 +103,11 @@ export async function POST(request: NextRequest) {
       customLink1Label,
       customLink2,
       customLink2Label,
+      // Table Customization
+      tableTheme,
+      tableColor,
+      tablePattern,
+      tableImage,
     } = body;
     
     if (!name || buyIn === undefined || rakePercentage === undefined) {
@@ -174,6 +179,11 @@ export async function POST(request: NextRequest) {
         customLink1Label,
         customLink2,
         customLink2Label,
+        // Table Customization
+        tableTheme: tableTheme || 'classic',
+        tableColor: tableColor || 'green',
+        tablePattern: tablePattern || 'felt',
+        tableImage,
         createdById: user.id,
         status: 'WAITING',
       },
