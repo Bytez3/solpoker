@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useRouter } from 'next/navigation';
+import { PokerChip, SoundEffects } from '@/components/poker/PokerAssets';
 
 // Production mode - real Solana transactions enabled
 const DEMO_MODE = false;
@@ -202,6 +203,7 @@ export default function LobbyPage() {
 
   return (
     <div className="min-h-screen bg-gray-900">
+      <SoundEffects />
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
